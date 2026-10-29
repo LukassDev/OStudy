@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Web: hide scrollbars throughout the app, including modal portals,
+ * without disabling wheel, touchpad, touch or keyboard scrolling. */
+@media screen {
+  * {
+    scrollbar-width: none !important;
+  }
+
+  *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
+/*
+ * Variáveis de cor para o Modo Claro / Modo Escuro.
+ * Formato "R G B" (sem vírgulas) para o Tailwind poder aplicar opacidade
+ * com rgb(var(--color-x) / <alpha-value>).
+ *
+ * :root      = tema por omissão (Claro)
+ * .dark = tema Escuro (ativado pelo NativeWind via colorScheme.set('dark'))
+ */
+:root {
+  --color-background: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-surfaceElevated: 241 243 244;
+  --color-border: 218 220 224;
+
+  --color-textPrimary: 32 33 36;
+  --color-textSecondary: 95 99 104;
+  --color-textTertiary: 128 134 139;
+
+  --color-primary: 224 123 80;
+  --color-primaryPressed: 201 98 58;
+  --color-primarySoft: 252 233 223;
+  --color-primaryText: 255 255 255;
+  --color-accent: 224 123 80;
+
+  --color-success: 24 128 56;
+  --color-successSoft: 230 244 234;
+  --color-error: 217 48 37;
+  --color-errorSoft: 252 232 230;
+  --color-warning: 249 171 0;
+  --color-warningSoft: 254 247 224;
+}
+
+.dark {
+  --color-background: 20 19 18;
+  --color-surface: 29 28 26;
+  --color-surfaceElevated: 37 35 32;
+  --color-border: 46 44 41;
+
+  --color-textPrimary: 240 237 232;
+  --color-textSecondary: 155 149 144;
+  --color-textTertiary: 106 102 95;
+
+  --color-primary: 224 123 80;
+  --color-primaryPressed: 201 98 58;
+  --color-primarySoft: 44 30 23;
+  --color-primaryText: 255 255 255;
+  --color-accent: 224 123 80;
+
+  --color-success: 61 176 96;
+  --color-successSoft: 22 38 24;
+  --color-error: 232 82 82;
+  --color-errorSoft: 46 22 22;
+  --color-warning: 212 154 42;
+  --color-warningSoft: 42 32 16;
+}
+

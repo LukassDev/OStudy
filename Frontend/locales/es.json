@@ -1,0 +1,4 @@
+{
+  "NSPhotoLibraryUsageDescription": "Oren necesita acceso a tu galería para que puedas adjuntar fotos de ejercicios al chat.",
+  "NSCameraUsageDescription": "Oren necesita acceso a tu cámara para que puedas tomar fotos de ejercicios directamente en el chat."
+}

@@ -1,0 +1,778 @@
+{
+  "attachmentViewer": {
+    "openImage": "Open image",
+    "openDocument": "Open document: {{name}}",
+    "close": "Close preview"
+  },
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "save": "Save",
+    "saving": "Saving...",
+    "confirm": "Confirm",
+    "typeToConfirm": "Type {{word}} to confirm",
+    "loading": "Loading...",
+    "preparingStudySpace": "Preparing your study space..."
+  },
+  "onboarding": {
+    "step1": {
+      "title": "Welcome to OStudy.",
+      "subtitle": "Take your studies to the next level."
+    },
+    "step2": {
+      "title": "Meet Oren, your smart tutor",
+      "text": "Oren tracks your progress, builds study plans tailored to you, and helps you understand the material — anytime, in any Space."
+    },
+    "step3": {
+      "title": "What's your name?",
+      "subtitle": "Your name helps us personalize your study experience.",
+      "namePlaceholder": "John Smith",
+      "languageLabel": "App language",
+      "languageHint": "You can change this anytime in your Profile."
+    },
+    "step4": {
+      "title": "What's your goal?",
+      "subtitle": "This helps the Tutor adapt to you.",
+      "goals": {
+        "improveGrades": "Improve grades",
+        "prepareExams": "Prepare for exams",
+        "learnSomethingNew": "Learn something new",
+        "organizeStudies": "Organize studies",
+        "other": "Other"
+      },
+      "customGoalPlaceholder": "E.g.: Learn to code"
+    },
+    "step5": {
+      "title": "Choose your avatar",
+      "subtitle": "You can always change it later, in your Profile.",
+      "initials": "Initials"
+    },
+    "step6": {
+      "title": "Light or dark mode?",
+      "subtitle": "You can switch anytime, in your Profile.",
+      "light": "Light",
+      "dark": "Dark",
+      "spaceHint": "You can create your first study Space from the dashboard."
+    },
+    "nextLabel": "Continue",
+    "startLabel": "Start studying",
+    "errors": {
+      "nameRequired": "Tell us your name.",
+      "goalRequired": "Choose a goal.",
+      "customGoalRequired": "Write down your goal.",
+      "saveFailed": "Error saving your profile. Please try again."
+    }
+  },
+  "dashboard": {
+    "greetings": {
+      "dawn": [
+        "The quiet of dawn is all yours,",
+        "Total focus in these golden hours,",
+        "Building results while the world sleeps,"
+      ],
+      "morning": [
+        "Good morning,",
+        "An excellent day of focus for you,",
+        "Starting the morning the best way,"
+      ],
+      "afternoon": [
+        "Good afternoon,",
+        "Keeping the pace and energy up this afternoon,",
+        "A full afternoon to move your studies forward,"
+      ],
+      "night": [
+        "Good evening,",
+        "Closing the study day on a high note,",
+        "One last push before well-earned rest,"
+      ],
+      "fallback": "Hi,"
+    },
+    "insights": {
+      "noSpaces": "You don't have any Space yet. Create the first one to start organizing your studies.",
+      "noSpacesCta": "Create your first Space",
+      "continueChat": "Continuing \"{{title}}\" ({{space}})? We can pick up where you left off.",
+      "continueChatCta": "Continue session",
+      "defaultSpaceName": "Space",
+      "neglectedSpace": "It's been a while since we talked about \"{{name}}\". How about opening a chat there today?",
+      "neglectedSpaceCta": "Open {{name}}",
+      "dailyRhythm": "Studying a bit every day beats cramming the night before. Shall we keep the pace?",
+      "spaceCount_one": "You have {{count}} Space organized. Have you thought about reviewing the older topics?",
+      "spaceCount_other": "You have {{count}} Spaces organized. Have you thought about reviewing the older topics?"
+    },
+    "defaultStudentName": "Student",
+    "orenSays": "Oren says:",
+    "stats": {
+      "spaces": "Spaces",
+      "chats": "Chats"
+    },
+    "searchPlaceholder": "Search subjects or chats...",
+    "sections": {
+      "yourSpaces": "Your Spaces",
+      "createNew": "+ Create New",
+      "recentChats": "Recent conversations",
+      "continueStudying": "Continue Studying"
+    },
+    "emptySpaces": {
+      "title": "Create your first Space",
+      "subtitle": "A Space organizes notes, tasks, and chats for a subject.",
+      "action": "Create Space"
+    },
+    "emptyChats": {
+      "title": "No recent chats yet",
+      "subtitle": "Once you start studying with Oren, your chats will show up here."
+    },
+    "spaceSubLabel_one": "{{count}} sub-space",
+    "spaceSubLabel_other": "{{count}} sub-spaces",
+    "spaceSubDefault": "Study Space"
+  },
+  "profile": {
+    "headerTitle": "Your Profile",
+    "defaultName": "Student",
+    "avatarPickerTitle": "Choose your avatar",
+    "initials": "Initials",
+    "saveSuccess": "Changes saved successfully.",
+    "saveError": "Error saving changes. Please try again.",
+    "nameRequired": "Name is required.",
+    "sections": {
+      "personalInfo": "Personal Information",
+      "appearance": "Appearance",
+      "language": "Language",
+      "privacySettings": "Privacy and settings"
+    },
+    "namePlaceholder": "Your name",
+    "goalPlaceholder": "E.g.: Get an A in Math",
+    "saveChanges": "Save changes",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": {
+      "rowLabel": "App language",
+      "hint": "This only changes the app's interface. Oren always replies in the language you write to him in."
+    },
+    "appSettings": {
+      "ai": {
+        "title": "AI settings",
+        "keyHint": "Your key is stored securely on this device.",
+        "apiKey": "OpenRouter API key",
+        "hideKey": "Hide key",
+        "showKey": "Show key",
+        "textModel": "Text model ID (OpenRouter)",
+        "textModelExample": "Example: {{model}}",
+        "visionModel": "Vision model ID (OpenRouter)",
+        "visionModelExample": "Use a model that supports images. Example: {{model}}",
+        "tutorPrompt": "Default tutor prompt",
+        "tutorPromptHint": "Sets the response style; tutor rules remain unchanged.",
+        "restorePrompt": "Restore default prompt",
+        "saveSettings": "Save settings",
+        "testKey": "Test key",
+        "createKey": "How to create an OpenRouter key",
+        "costNotice": "Model usage and PDF OCR may incur OpenRouter charges."
+      },
+      "limits": {
+        "title": "Tutor limits",
+        "description": "Adjust limits for the tutor, attachments, resources, quizzes, and previews.",
+        "hint": "Use whole numbers; changes apply to future requests.",
+        "save": "Save limits",
+        "restore": "Restore default limits",
+        "fieldAccessibility": "{{field}}, in {{unit}}",
+        "groups": {
+          "Tutor IA": "AI tutor",
+          "Anexos do chat": "Chat attachments",
+          "Recursos": "Resources",
+          "Quizzes e flashcards": "Quizzes and flashcards",
+          "Pré-visualização de documentos": "Document previews"
+        },
+        "fields": {
+          "tutorHistoryMessages": "Tutor history messages",
+          "tutorContextChars": "Maximum context",
+          "tutorAttachedDocumentChars": "Text extracted from attachments",
+          "tutorReplyTokens": "Maximum response",
+          "aiTimeoutSeconds": "Request timeout",
+          "chatAttachmentMiB": "Attachment per message",
+          "webChatAttachmentMiB": "Attachment stored on web",
+          "resourceFileMiB": "Resource file",
+          "webResourceFileMiB": "Web text file",
+          "webResourceTextChars": "Web resource text",
+          "quizMaxItems": "Maximum items per quiz/flashcards",
+          "officeArchiveEntries": "Archive entries",
+          "officeUnpackedMiB": "Uncompressed size",
+          "officeHtmlMiChars": "Maximum HTML size",
+          "officeSheets": "Spreadsheets",
+          "officeRows": "Rows per sheet",
+          "officeColumns": "Columns per sheet",
+          "officeSlides": "Slides per presentation"
+        },
+        "units": {
+          "mensagens": "messages",
+          "caracteres": "characters",
+          "tokens": "tokens",
+          "segundos": "seconds",
+          "itens": "items",
+          "entradas": "entries",
+          "Mi caracteres": "Mi characters",
+          "folhas": "sheets",
+          "linhas": "rows",
+          "colunas": "columns",
+          "slides": "slides"
+        }
+      },
+      "data": {
+        "sectionTitle": "Local data",
+        "backupTitle": "Automatic backup",
+        "active": "Active",
+        "inactive": "Disabled",
+        "backupDescriptionComputer": "Saves backups to a folder on your computer and keeps the 10 most recent.",
+        "backupDescriptionDevice": "Saves backups on this device and keeps the 10 most recent.",
+        "intervalHours_one": "{{count}} h",
+        "intervalHours_other": "{{count}} h",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "browserRequirement": "Requires an up-to-date version of Chrome or Edge.",
+        "folderName": "Folder: {{folder}}",
+        "selectedFolder": "Selected folder",
+        "lastBackup": "Last backup: {{time}}",
+        "today": "today",
+        "yesterday": "yesterday",
+        "backupNow": "Back up now",
+        "changeFolder": "Change folder",
+        "deactivate": "Disable",
+        "activating": "Activating…",
+        "chooseFolderActivate": "Choose folder and enable",
+        "activateBackup": "Enable automatic backup",
+        "yourData": "Your data",
+        "exportTitle": "Export data (.db)",
+        "exportDescription": "Save a copy of your data.",
+        "importTitle": "Import data (.db)",
+        "importDescription": "Replaces the current data.",
+        "dangerZone": "Danger zone",
+        "deleteAll": "Delete all local data",
+        "deleteDialogTitle": "Delete all local data?",
+        "deleteDialogMessage": "Spaces, conversations, resources, notes, and settings on this device will be deleted. This cannot be undone.",
+        "deleteConfirm": "Delete everything",
+        "deleteWord": "DELETE",
+        "exportBefore": "Export first"
+      },
+      "dialogs": {
+        "settingsSaved": "Settings saved",
+        "keyStorage": "Your key is stored only on this device and is not included in database exports.",
+        "limitsSaved": "Limits saved",
+        "limitsSavedMessage": "Changes were saved locally and will be included in database exports.",
+        "keyValid": "Key is valid",
+        "keyValidMessage": "OpenRouter responded to the test request.",
+        "exportTitle": "Export data",
+        "exportWarning": "Your OpenRouter key and attachment files stored outside the database will not be exported.",
+        "backupEnabled": "Automatic backup enabled",
+        "backupEnabledWeb": "The backup was saved in the OStudy Backups folder inside the selected folder. Your browser may pause backups while this page is closed.",
+        "backupEnabledDevice": "The backup was saved on this device and will be updated while the app is open or returns to the foreground.",
+        "backupSaved": "Backup saved",
+        "backupSavedMessage": "The database backup was created successfully.",
+        "importTitle": "Replace local data?",
+        "importWarning": "Importing replaces the current local database. Continue?"
+      },
+      "errors": {
+        "open": "Could not open settings",
+        "loadBackup": "Could not load automatic backup settings",
+        "save": "Could not save settings",
+        "saveLimits": "Could not save limits",
+        "testKey": "Could not test key",
+        "export": "Export failed",
+        "enableBackup": "Could not enable backup",
+        "disableBackup": "Could not disable backup",
+        "interval": "Could not save interval",
+        "backup": "Could not save backup",
+        "import": "Import failed",
+        "delete": "Could not delete data"
+      }
+    }
+  },
+  "calendar": {
+    "types": {
+      "exam": "Exam",
+      "assignment": "Assignment",
+      "session": "Study session",
+      "other": "Other"
+    },
+    "newEvent": "New Event",
+    "empty": {
+      "title": "No events yet",
+      "subtitle": "Log exams, assignments, and study sessions so the Tutor can help you plan.",
+      "action": "Create event"
+    },
+    "dayCountToday": "Today",
+    "dayCountPast": "Past",
+    "dayCountFuture": "{{count}}d",
+    "deleteConfirm": {
+      "title": "Delete event",
+      "message": "Delete \"{{title}}\"?",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "modal": {
+      "editTitle": "Edit event",
+      "newTitle": "New event",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Ex: Math exam",
+      "typeLabel": "Type",
+      "dateLabel": "Date",
+      "saveButton": "Save",
+      "createButton": "Create event",
+      "cancel": "Cancel",
+      "errors": {
+        "saveFailed": "Error saving. Please try again."
+      }
+    },
+    "dateFormatLong": "MMMM d, yyyy",
+    "dateFormatShort": "MMMM d"
+  },
+  "grades": {
+    "empty": {
+      "title": "No grades yet",
+      "subtitle": "Log your grades to see the weighted average and your progress over time.",
+      "action": "Add grade"
+    },
+    "weightedAverage": "Weighted average",
+    "outOf20": "out of 20",
+    "evolutionTitle": "Progress",
+    "newGrade": "New Grade",
+    "weightLabel": "weight {{weight}}",
+    "deleteConfirm": {
+      "title": "Delete grade",
+      "message": "Delete \"{{title}}\"?",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "modal": {
+      "editTitle": "Edit grade",
+      "newTitle": "New grade",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Ex: Test 1",
+      "scoreLabel": "Score",
+      "outOfLabel": "Out of",
+      "weightFieldLabel": "Weight",
+      "dateLabel": "Date",
+      "saveButton": "Save",
+      "addButton": "Add",
+      "cancel": "Cancel",
+      "errors": {
+        "invalidValues": "Fill in the title and valid numeric values.",
+        "saveFailed": "Error saving. Please try again."
+      }
+    },
+    "dateFormatShort": "MMMM d",
+    "dateFormatLong": "MMMM d, yyyy",
+    "outOfScale": "out of {{scale}}"
+  },
+  "content": {
+    "importance": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "empty": {
+      "title": "Structure this Space's subject matter",
+      "subtitle": "Create topics and sub-topics (ex: Functions > Limits > Derivatives) so the Tutor knows what you've already covered.",
+      "action": "Create first topic"
+    },
+    "newTopic": "New Topic",
+    "reviewedAgo": "Reviewed {{time}}",
+    "notReviewedYet": "Not reviewed yet",
+    "deleteConfirm": {
+      "title": "Delete topic",
+      "withChildren": "This also deletes the {{count}} sub-topics inside \"{{title}}\".",
+      "withoutChildren": "Delete \"{{title}}\"?",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "modal": {
+      "editTitle": "Edit topic",
+      "newSubtopicTitle": "New sub-topic",
+      "newTopicTitle": "New topic",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Ex: Integration by parts",
+      "summaryLabel": "Summary (optional)",
+      "summaryPlaceholder": "Brief note about the topic",
+      "importanceLabel": "Importance",
+      "saveButton": "Save",
+      "createButton": "Create topic",
+      "cancel": "Cancel"
+    }
+  },
+  "resources": {
+    "preview": {
+      "microsoftNote": "Viewed by Microsoft using a temporary link. If it does not load, use the simplified view.",
+      "simplePreview": "Simplified view",
+      "officeNote": "Reading view. Layout may differ from the original; animations and advanced charts are not reproduced.",
+      "failed": "This file could not be previewed. Try again or download it.",
+      "unsupported": "This format needs a compatible app. Download the file and open it in Google Docs, Sheets, Slides or another app.",
+      "retry": "Try again",
+      "openExternal": "Open externally",
+      "download": "Download"
+    },
+    "uploadError": {
+      "title": "Error",
+      "genericMessage": "Couldn't upload the file. Please try again.",
+      "openFailed": "Couldn't open the file.",
+      "fileTooLarge": "This file exceeds {{limit}} MB. Please choose a smaller file."
+    },
+    "empty": {
+      "title": "No resources yet"
+    },
+    "addFile": "Add file",
+    "addLink": "Add link",
+    "fileButton": "File",
+    "linkButton": "Link",
+    "longPressHint": "Long-press a resource to delete it",
+    "dateFormatShort": "MMMM d",
+    "linkModal": {
+      "title": "New link",
+      "titleFieldLabel": "Title",
+      "titlePlaceholder": "Ex: Video about integrals",
+      "urlLabel": "URL",
+      "addButton": "Add",
+      "cancel": "Cancel",
+      "errors": {
+        "invalid": "Title is required and the link must start with http:// or https://",
+        "saveFailed": "Error saving. Please try again."
+      }
+    }
+  },
+  "chat": {
+    "featureChips": {
+      "solveExercise": {
+        "label": "Solve Exercise",
+        "prompt": "I'll take a photo of an exercise so we can solve it together",
+        "desc": "Analyzes and explains step by step"
+      },
+      "scheduleTest": {
+        "label": "Schedule Test",
+        "prompt": "Schedule my test for Friday",
+        "desc": "Organizes your calendar"
+      },
+      "studyPlan": {
+        "label": "Study Plan",
+        "prompt": "Put together a study plan for this subject",
+        "desc": "Personalized review roadmap"
+      },
+      "explainTopic": {
+        "label": "Explain Topic",
+        "prompt": "Explain the most important topic in this Space",
+        "desc": "Simple and direct summary"
+      }
+    },
+    "defaultTitle": "Study Session",
+    "planBannerGoal": "Preparing for {{space}}",
+    "defaultSpaceName": "Subject",
+    "permissions": {
+      "galleryTitle": "Gallery Access Required",
+      "galleryDeniedMessage": "Enable gallery access in your phone's settings to attach photos to the chat.",
+      "galleryRejectedMessage": "Without gallery access, it's not possible to attach exercise photos to the chat.",
+      "cameraTitle": "Camera Access Required",
+      "cameraDeniedMessage": "Enable camera access in your phone's settings to take photos in the chat.",
+      "cameraRejectedMessage": "Without camera access, it's not possible to take photos directly in the chat."
+    },
+    "attachedImageFallback": "梼 Attached image",
+    "analyzedImageLabel": "Analyzed image",
+    "orenName": "Oren",
+    "scrollToLatest": "Go to latest message",
+    "emptyState": {
+      "title": "Hi! I'm Oren",
+      "subtitle": "Your personal AI tutor. What do you want to practice, review, or work through today?"
+    },
+    "errors": {
+      "renameFailedTitle": "Error",
+      "renameFailedMessage": "Couldn't rename the conversation.",
+      "deleteFailedTitle": "Error",
+      "deleteFailedMessage": "Couldn't delete the conversation.",
+      "noActiveSession": "No active session. Please log in again.",
+      "spaceNotFound": "Space ID not found for this chat.",
+      "sessionExpired": "Session expired. Please log in again.",
+      "maintenanceMode": "Oren is under maintenance right now. Please try again later.",
+      "communicationError": "Error communicating with the Tutor.",
+      "unsupportedVideoTitle": "Video not supported",
+      "unsupportedVideoMessage": "Chat accepts images and documents, but not videos."
+    },
+    "deleteChatConfirm": {
+      "title": "Delete Conversation",
+      "message": "Are you sure you want to delete this conversation? All message history will be lost.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "imagePreview": {
+      "loadingTitle": "Loading image...",
+      "loadingSubtitle": "Just a moment",
+      "attachedTitle": "Exercise Image Attached",
+      "attachedSubtitle": "Ready to be analyzed by Oren"
+    },
+    "inputPlaceholder": "Ask for an explanation, send a question...",
+    "mode": {
+      "flash": "Flash",
+      "deep": "Deep"
+    },
+    "webSources": {
+      "title_one": "{{count}} source consulted",
+      "title_other": "{{count}} sources consulted"
+    },
+    "attachMenu": {
+      "title": "Attach to chat",
+      "takePhoto": "Take photo",
+      "takePhotoDesc": "Use your phone's camera",
+      "chooseGallery": "Choose from gallery",
+      "chooseGalleryDesc": "Select an existing photo",
+      "chooseDocument": "Attach document",
+      "chooseDocumentDesc": "PDF, Word, Excel, text or code (max. {{limit}} MiB per document)",
+      "docReady": "Ready to send",
+      "loadingDoc": "Reading document...",
+      "docTooBigTitle": "File too large",
+      "docTooBigMessage": "The document cannot exceed {{limit}} MiB.",
+      "imageTooBigTitle": "Image too large",
+      "imageTooBigMessage": "Even after compression, this image exceeds {{limit}} MiB. Choose or take a smaller image."
+    },
+    "optionsModal": {
+      "title": "Conversation Options",
+      "nameLabel": "Conversation name",
+      "namePlaceholder": "Ex: History Summary",
+      "saveNameButton": "Save Name",
+      "bubbleColorLabel": "Your message color",
+      "deleteButton": "Delete Conversation"
+    },
+    "typingPhases": [
+      "Analyzing your question...",
+      "Reviewing your notes...",
+      "Connecting the key concepts...",
+      "Preparing a clear example...",
+      "Structuring the best answer...",
+      "Adapting the explanation to your pace...",
+      "Checking the details...",
+      "Organizing the ideas...",
+      "Finding the best approach...",
+      "Comparing possible paths...",
+      "Choosing useful examples...",
+      "Simplifying the difficult points...",
+      "Connecting theory and practice...",
+      "Checking the calculations...",
+      "Preparing a step-by-step explanation...",
+      "Adjusting the level of detail...",
+      "Reviewing the answer...",
+      "Highlighting what matters most...",
+      "Finishing the explanation...",
+      "Almost ready..."
+    ],
+    "quiz": {
+      "quizTitle": "Quiz",
+      "flashcardsTitle": "Flashcards",
+      "checkAnswer": "Check",
+      "nextQuestion": "Next",
+      "finish": "Finish",
+      "showAnswer": "Show answer",
+      "flipCard": "Flip",
+      "correct": "Correct!",
+      "incorrect": "Not quite",
+      "cardProgress": "{{current}} of {{total}}",
+      "quizFinished": "Quiz done — {{score}}/{{total}} correct",
+      "quizResultSent": "You scored {{score}}/{{total}}",
+      "restart": "Restart"
+    },
+    "copyMessage": "Copy message",
+    "copied": "Copied"
+  },
+  "sidebar": {
+    "appName": "OStudy",
+    "searchPlaceholder": "Search Spaces...",
+    "sections": {
+      "favorites": "Favorites",
+      "recentChats": "Recent Chats",
+      "spaces": "Spaces"
+    },
+    "noResults": "No results",
+    "createFirstSpace": "Create your first Space",
+    "newSpace": "New Space",
+    "defaultUserName": "User",
+    "home": "Home"
+  },
+  "chatList": {
+    "noMessagesYet": "No messages yet",
+    "empty": {
+      "title": "No chats yet",
+      "subtitle": "Start the first conversation with the Tutor about this Space.",
+      "action": "Start conversation"
+    },
+    "newChat": "New Chat",
+    "longPressHint": "Long-press a conversation to rename or delete",
+    "longPressMenu": {
+      "question": "What do you want to do with this conversation?",
+      "cancel": "Cancel",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
+    "renameModal": {
+      "title": "Rename conversation",
+      "placeholder": "Conversation name",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "deleteConfirm": {
+      "title": "Delete conversation?",
+      "message": "This action cannot be undone and will delete this conversation's entire history.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "conversationsHeading": "Conversations"
+  },
+  "plan": {
+    "fallbackMessages": [
+      "All set. Shall we?",
+      "Take a breath and follow the plan.",
+      "No rush. One step at a time.",
+      "Roadmap ready! Shall we study together?",
+      "Everything organized for you. Let's go!",
+      "All ready. Go at your own pace!",
+      "Everything in place. Time to move forward.",
+      "Everything tidied up for you. Shall we start?"
+    ],
+    "overallGoal": "Overall goal",
+    "progressSummary": "{{reviewed}} of {{total}} modules completed · {{progress}}%",
+    "modulesTitle": "Plan modules",
+    "empty": {
+      "title": "You don't have a plan for this Space yet",
+      "subtitle": "Talk to Oren in the chat and ask, for example: \"put together a study plan for this subject\". Modules will show up here automatically as you talk.",
+      "action": "Start a chat with Oren"
+    }
+  },
+  "spaces": {
+    "tabs": {
+      "chats": "Oren",
+      "plan": "Plan",
+      "content": "Content",
+      "calendar": "Calendar",
+      "grades": "Grades",
+      "resources": "Resources"
+    },
+    "form": {
+      "newSpaceTitle": "New Space",
+      "editSpaceTitle": "Edit Space",
+      "namePlaceholder": "Ex: Math, Projects...",
+      "namePlaceholderPreview": "Space name",
+      "nameLabel": "Space name",
+      "iconLabel": "Choose an icon",
+      "colorLabel": "Theme color",
+      "favoriteBadge": "Favorite",
+      "favoriteToggleTitle": "Mark as favorite",
+      "favoriteToggleSubtitle": "Quick access at the top of your Dashboard",
+      "createButton": "Create Space",
+      "saveButton": "Save changes",
+      "deleteButton": "Delete Space",
+      "deletingButton": "Deleting...",
+      "errors": {
+        "nameRequired": "Name is required.",
+        "createFailed": "Error creating Space. Please try again.",
+        "saveFailed": "Error saving changes.",
+        "deleteFailed": "Error deleting Space. Please try again."
+      },
+      "deleteConfirm": {
+        "title": "Delete Space",
+        "withDescendants_one": "This Space has {{count}} sub-Space inside. Deleting removes everything inside it (content, chats, calendar, and grades). This action cannot be undone.",
+        "withDescendants_other": "This Space has {{count}} sub-Spaces inside. Deleting removes everything inside it (content, chats, calendar, and grades). This action cannot be undone.",
+        "noDescendants": "This action is permanent and removes all content, chats, calendar, and grades from this Space. It cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      }
+    }
+  },
+  "update15": {
+    "error": "Something went wrong",
+    "invalidName": "Enter a name with 1–200 characters.",
+    "favorite": "Toggle favorite",
+    "up": "Move up",
+    "down": "Move down",
+    "rename": "Rename",
+    "save": "Save",
+    "back": "Save",
+    "agenda": "Agenda",
+    "grades": "Grades",
+    "calendar": "Calendar",
+    "schedule": "Weekly timetable",
+    "retry": "Try again",
+    "hideAverage": "Hide overall average",
+    "showAverage": "Show overall average",
+    "averageHelp": "Select the modules to include. Each selected module has equal weight; assessments within a module use their own weights. Modules without grades are excluded.",
+    "reminders": "Notify before classes",
+    "off": "Off",
+    "localTime": "Times follow this device’s local time. Weekly classes repeat until edited or deleted.",
+    "allSpaces": "All Spaces",
+    "noEvents": "No events this month.",
+    "addLesson": "Add class",
+    "hideScheduleCard": "Hide today’s classes card",
+    "showScheduleCard": "Show today’s classes card",
+    "cancel": "Cancel",
+    "subject": "Subject",
+    "room": "Room",
+    "start": "Start (HH:mm)",
+    "end": "End (HH:mm)",
+    "noSpace": "No Space",
+    "delete": "Delete",
+    "invalidLesson": "Enter a subject and valid times (HH:mm). End must be after start.",
+    "notificationsMobile": "Notifications are available in the mobile app.",
+    "notificationsDenied": "Enable notifications in device settings to receive reminders.",
+    "viewAll": "View all",
+    "today": "Today’s classes",
+    "noLessons": "No classes today."
+  },
+  "studyVisual": {
+    "editResources": "Organize resources",
+    "dragResourcesHint": "Hold a resource to move it. Swipe normally to see the others. Tap Done to save.",
+    "editSpaces": "Organize Spaces",
+    "finishEditing": "Done",
+    "dragSpacesHint": "Hold a Space to move it. Swipe normally to see the others. Tap Done to save.",
+    "upcomingEvents": "Upcoming events",
+    "noUpcomingEvents": "No upcoming events.",
+    "globalAverage": "Overall grade average",
+    "chooseModules": "Choose your modules to see your overall average.",
+    "timetable": "Timetable",
+    "scale": "Grade scale",
+    "modules": "Your modules",
+    "noModules": "No modules yet",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "events": "Events",
+    "noEvents": "No events here",
+    "eventsHint": "Events from your Spaces appear here.",
+    "noClasses": "No classes scheduled",
+    "classesHint": "Add a class to get started.",
+    "noRoom": "No room set",
+    "notifications": "Reminders",
+    "enableReminders": "Class reminders",
+    "editClass": "Edit class",
+    "weekday": "Day of the week",
+    "linkSpace": "Space · optional"
+  },
+  "scheduleQuick": {
+    "duplicateExists": "This class already exists on the selected days. Choose another day or time.",
+    "overlap": "This time overlaps the classes below. Tap Save again to keep both.",
+    "interval": "Break before the next class",
+    "added": "Class added. You can enter the next one.",
+    "saveAnother": "Save and add another",
+    "duplicate": "Duplicate class",
+    "copyDay": "Copy day to…",
+    "copyHint": "Choose destination days. Existing classes are kept and duplicates skipped.",
+    "copyCount": "Classes to add: {{count}}",
+    "copyOverlap": "These classes overlap:",
+    "copyAnyway": "Copy and keep both",
+    "copy": "Copy classes",
+    "quickGrid": "Fill by time slots",
+    "hideGrid": "Close grid",
+    "gridHint": "Set the time slots and tap a free slot. You can adjust times in the form.",
+    "duration": "Duration (min)",
+    "gap": "Break (min)",
+    "invalidGrid": "Enter valid times, a positive duration and a break of zero or more minutes.",
+    "syncError": "Changes could not be saved. They are kept in this session; retry before closing the app."
+  },
+  "scheduleMobile": {
+    "hint": "Swipe to explore the week. Tap an empty time slot to add a class."
+  },
+  "scheduleWeb": {
+    "hint": "Your weekly timetable. Click an empty time slot to add a class."
+  }
+}
