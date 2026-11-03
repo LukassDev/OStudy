@@ -27,11 +27,10 @@ import { ProfileAppSettings } from '../../src/components/profile/ProfileAppSetti
 export default function Profile() {
   const colors = useThemeColors();
   const { setMode } = useThemeMode();
-  const { name, goal, avatar_style, language, theme, updateProfile } = useProfileStore();
+  const { name, avatar_style, language, theme, updateProfile } = useProfileStore();
   const { t, i18n } = useTranslation();
 
   const [editName, setEditName] = useState(name || '');
-  const [editGoal, setEditGoal] = useState(goal || '');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -42,15 +41,14 @@ export default function Profile() {
 
   useEffect(() => {
     if (name) setEditName(name);
-    if (goal !== undefined && goal !== null) setEditGoal(goal);
     if (avatar_style) setSelectedAvatar(avatar_style);
-  }, [name, goal, avatar_style]);
+  }, [name, avatar_style]);
 
   const handleSave = async () => {
     if (!editName.trim()) { setError(t('profile.nameRequired')); return; }
     setSaving(true); setError(''); setSuccess(false);
     try {
-      await updateProfile({ name: editName.trim(), goal: editGoal.trim() || null, avatar_style: selectedAvatar });
+      await updateProfile({ name: editName.trim(), avatar_style: selectedAvatar });
       setSuccess(true);
     } catch {
       setError(t('profile.saveError'));
@@ -135,20 +133,6 @@ export default function Profile() {
                 placeholderTextColor={colors.textTertiary}
                 value={editName}
                 onChangeText={setEditName}
-                autoCorrect={false}
-                autoComplete="off"
-                textContentType="none"
-              />
-            </View>
-
-            <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
-              <Ionicons name="telescope-outline" size={19} color={colors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.textInput, { color: colors.textPrimary }]}
-                placeholder={t('profile.goalPlaceholder')}
-                placeholderTextColor={colors.textTertiary}
-                value={editGoal}
-                onChangeText={setEditGoal}
                 autoCorrect={false}
                 autoComplete="off"
                 textContentType="none"

@@ -28,7 +28,7 @@ interface QuizFlashcardsProps {
  * json_action "quiz_flashcards". Toda a interação é local — mas:
  * 1. O estado (índice, score, respostas) é persistido em AsyncStorage para
  *    sobreviver a sair/entrar no chat.
- * 2. Ao terminar o quiz, envia automaticamente uma mensagem ao Oren com o
+ * 2. Ao terminar o quiz, envia automaticamente uma mensagem ao tutor com o
  *    resultado, para ele poder comentar/corrigir.
  */
 export const QuizFlashcards: React.FC<QuizFlashcardsProps> = ({ data, messageId, chatId }) => {
@@ -71,7 +71,7 @@ interface QuizPersistedState {
   finished: boolean;
   // respostas dadas: índice da resposta escolhida por pergunta (-1 = não respondida)
   answers: number[];
-  // se já enviou o resultado ao Oren
+  // se já enviou o resultado ao tutor
   resultSent: boolean;
 }
 
@@ -145,7 +145,7 @@ const QuizView: React.FC<{
     };
   }, [index, score, finished, answers, resultSent, loaded, messageId]);
 
-  // Enviar resultado ao Oren quando o quiz termina (só uma vez)
+  // Enviar resultado ao tutor quando o quiz termina (só uma vez)
   useEffect(() => {
     if (!finished || sentRef.current) return;
     sentRef.current = true;
@@ -156,7 +156,7 @@ const QuizView: React.FC<{
 
     // Resposta compacta no formato "Resposta: 1: a; 2:b; 3:c" — apenas a letra
     // escolhida por pergunta (minúscula, pela ordem das opções), e "-" se não
-    // respondeu. O Oren tem o contexto completo do quiz (perguntas/opções/
+    // respondeu. O tutor tem o contexto completo do quiz (perguntas/opções/
     // corretas) reinjetado pelo backend a partir de messages.quiz, por isso
     // basta enviar as letras escolhidas.
     const letters = ['a', 'b', 'c', 'd', 'e'];

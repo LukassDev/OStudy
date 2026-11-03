@@ -18,6 +18,7 @@ export interface Space {
   name: string;
   icon: string;
   color: string;
+  google_classroom_course_id?: string | null;
   is_favorite: boolean;
   position?: number;
   depth?: number;
@@ -151,6 +152,7 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
       parent_id: data.parent_id ?? null,
       icon: data.icon || 'folder-outline',
       color: data.color || 'blue',
+      google_classroom_course_id: data.google_classroom_course_id ?? null,
       is_favorite: data.is_favorite ?? false,
     });
     await get().fetchSpaces(true);
@@ -163,6 +165,7 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
       name: data.name,
       icon: data.icon,
       color: data.color,
+      google_classroom_course_id: data.google_classroom_course_id,
       is_favorite: data.is_favorite === undefined ? undefined : Number(data.is_favorite),
       position: data.position,
     });

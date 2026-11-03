@@ -9,6 +9,7 @@ import { Sidebar } from '../../src/components/navigation/Sidebar';
 import { useThemeColors } from '../../src/constants/theme';
 import { useUiStore } from '../../src/stores/uiStore';
 import { isHorizontalSwipe } from '../../src/utils/swipeNavigation';
+import { syncAllConnectedSpaces } from '../../src/services/classroom/sync';
 
 export default function AppLayout() {
   return <AppLayoutContent />;
@@ -41,6 +42,10 @@ function AppLayoutContent() {
   useEffect(() => {
     if (Platform.OS !== 'web') closeSidebar();
   }, [pathname, closeSidebar]);
+
+  useEffect(() => {
+    void syncAllConnectedSpaces();
+  }, []);
 
   const settleSidebar = (open: boolean) => {
     if (open !== sidebarOpen) {

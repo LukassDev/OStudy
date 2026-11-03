@@ -64,6 +64,21 @@ A chave OpenRouter é guardada separadamente da base exportada: usa armazenament
 
 Backups automáticos são opcionais. No mobile ficam no armazenamento da aplicação; na Web, numa pasta autorizada pelo utilizador, usando um browser compatível. Os backups são verificados enquanto a aplicação está aberta ou regressa ao primeiro plano.
 
+## Integração com o Google Classroom (opcional)
+
+O OStudy pode sincronizar tarefas do Google Classroom para o calendário de um Space usando o próprio Client ID de cada utilizador. Esta opção é 100% local e não exige backend nem conta centralizada da OStudy.
+
+### Como configurar
+
+1. Cria ou reutiliza um projeto na [Google Cloud Console](https://console.cloud.google.com/).
+2. Ativa a Google Classroom API em **APIs e serviços → Biblioteca**.
+3. Cria um **ID de cliente OAuth** e copia o Client ID gerado.
+4. Nas definições da aplicação, abre **Perfil → Definições da IA** e usa a secção **Google Classroom** para guardar o Client ID.
+5. Toca em **Ligar ao Google Classroom** e aceita o consentimento da conta Google.
+6. Em cada Space, abre **Editar Space** e selecciona a turma correspondente no campo **Turma do Google Classroom**.
+
+A sincronização é automática ao abrir a app e pode ser forçada com pull-to-refresh no ecrã da Agenda ou do calendário do Space. Só são lidos dados do Classroom; a app não escreve alterações na conta Google.
+
 ## Build
 
 Executa estes comandos a partir de `Frontend/`:

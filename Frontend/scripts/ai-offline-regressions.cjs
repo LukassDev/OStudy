@@ -55,18 +55,19 @@ async function main() {
   assert.equal(authorization, 'Bearer secret-test-key');
 
   requestBody = undefined;
-  await provider.completeWithImages('model/vision', 'system prompt', history, [
-    { mimeType: 'image/jpeg', base64: 'aW1hZ2U=' },
-  ]);
+  await provider.completeWithAttachments('model/vision', 'system prompt', history, {
+    images: [{ mimeType: 'image/jpeg', base64: 'aW1hZ2U=' }],
+  });
   assert.equal(requestBody.model, 'model/vision');
   assert.deepEqual(requestBody.messages[1].content[1], {
     type: 'image_url',
     image_url: { url: 'data:image/jpeg;base64,aW1hZ2U=' },
   });
-  assert.equal(history[0].content, 'Ajuda-me', 'Preparing image messages does not mutate chat history');
+  assert.equal(requestBody.max_tokens, 4096);
+  assert.equal(requestBody.plugins, undefined, 'Images do not enable PDF parsing');
 
   requestBody = undefined;
-  await provider.completeWithAttachments('model/pdf', 'system prompt', history, {
+  await provider.completeWithAttachments('model/pdf-vision', 'system prompt', history, {
     pdfs: [{ name: 'worksheet.pdf', base64: 'cGRm' }],
   });
   assert.deepEqual(requestBody.plugins, [{ id: 'file-parser', pdf: { engine: 'mistral-ocr' } }]);
@@ -74,9 +75,9 @@ async function main() {
     type: 'file',
     file: { filename: 'worksheet.pdf', file_data: 'data:application/pdf;base64,cGRm' },
   });
-  assert.equal(history[0].content, 'Ajuda-me', 'Preparing PDF messages does not mutate chat history');
+  assert.equal(history[0].content, 'Ajuda-me');
   assert.equal(requests, 3);
-  console.log('Passed: no-key network guard, OpenRouter text/image/PDF requests, OCR plugin, and immutable history.');
+  console.log('Passed: no-key network guard, text/image requests, and PDF OCR plugin.');
 }
 
 main().catch(error => {

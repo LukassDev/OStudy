@@ -32,10 +32,11 @@ import MathText from "../../../src/components/chat/Mathtext";
 import { MessageActions } from "../../../src/components/chat/MessageActions";
 import { QuizFlashcards } from "../../../src/components/chat/QuizFlashcards";
 import { TypingIndicator } from "../../../src/components/chat/TypingIndicator";
-import { OrenAvatar } from "../../../src/components/common/OrenAvatar";
 import { showAppDialog } from "../../../src/components/ui/AppDialog";
 import { getApiKey } from "../../../src/services/ai/keyStore";
 import { DEFAULT_APP_LIMITS, getAppLimits } from "../../../src/services/appLimits";
+import { getSetting } from "../../../src/db/repositories/settings.repo";
+import { DEFAULT_VISION_MODEL } from "../../../src/services/ai/config";
 import { useThemeColors } from "../../../src/constants/theme";
 import { useDateFnsLocale } from "../../../src/i18n/dateFnsLocale";
 import {
@@ -44,44 +45,8 @@ import {
   prepareChatImageForUpload,
   useChatStore,
 } from "../../../src/stores/chatStore";
+import { useProfileStore } from "../../../src/stores/profileStore";
 import type { WebSource } from "../../../src/stores/chatStore";
-
-const BUBBLE_COLORS = ["#3B82F6", "#F97316", "#10B981", "#8B5CF6", "#EC4899"];
-
-function useFeatureChips(): {
-  icon: "camera-outline" | "calendar-outline" | "map-outline" | "bulb-outline";
-  label: string;
-  prompt: string;
-  desc: string;
-}[] {
-  const { t } = useTranslation();
-  return [
-    {
-      icon: "camera-outline",
-      label: t("chat.featureChips.solveExercise.label"),
-      prompt: t("chat.featureChips.solveExercise.prompt"),
-      desc: t("chat.featureChips.solveExercise.desc"),
-    },
-    {
-      icon: "calendar-outline",
-      label: t("chat.featureChips.scheduleTest.label"),
-      prompt: t("chat.featureChips.scheduleTest.prompt"),
-      desc: t("chat.featureChips.scheduleTest.desc"),
-    },
-    {
-      icon: "map-outline",
-      label: t("chat.featureChips.studyPlan.label"),
-      prompt: t("chat.featureChips.studyPlan.prompt"),
-      desc: t("chat.featureChips.studyPlan.desc"),
-    },
-    {
-      icon: "bulb-outline",
-      label: t("chat.featureChips.explainTopic.label"),
-      prompt: t("chat.featureChips.explainTopic.prompt"),
-      desc: t("chat.featureChips.explainTopic.desc"),
-    },
-  ];
-}
 
 function AnimatedMessage({
   children,
@@ -207,7 +172,7 @@ export default function ChatThread() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const dateLocale = useDateFnsLocale();
-  const FEATURE_CHIPS = useFeatureChips();
+  const name = useProfileStore((state) => state.name);
   const { id, autoMessage, messageId } = useLocalSearchParams<{
     id: string;
     autoMessage?: string;
@@ -240,6 +205,7 @@ export default function ChatThread() {
   const [previewAttachment, setPreviewAttachment] = useState<{ uri: string; name?: never } | { name: string; uri?: never } | null>(null);
   const [input, setInput] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [attachedImages, setAttachedImages] = useState<{
     id: string;
     base64: string;
@@ -263,12 +229,7 @@ export default function ChatThread() {
   const [chatTitleInput, setChatTitleInput] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Estado para a cor da bolha do utilizador (padrão: Azul). A escolha é
-  // persistida localmente no dispositivo via AsyncStorage, para que ao sair
-  // e voltar ao app (ou ao chat) a cor preferida continue a mesma.
-  const bubbleColorStorageKey = "user-bubble-color";
-  const [userBubbleColor, setUserBubbleColor] = useState(BUBBLE_COLORS[0]);
+  const [responseMode, setResponseMode] = useState<"flash" | "deep">("flash");
 
   const flatListRef = useRef<FlatList>(null);
   const hasAutoSent = useRef(false);
@@ -370,25 +331,6 @@ export default function ChatThread() {
     }, 300);
     return () => clearTimeout(t);
   }, [input, draftStorageKey]);
-
-  // ─── COR DA BOLHA PERSISTENTE ────────────────────────────────────────────
-  // Carrega a cor guardada no arranque (uma única vez) e grava sempre que o
-  // utilizador a altera, para que fique guardada no cache do telemóvel.
-  useEffect(() => {
-    AsyncStorage.getItem(bubbleColorStorageKey)
-      .then((saved) => {
-        if (saved && BUBBLE_COLORS.includes(saved)) {
-          setUserBubbleColor(saved);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    AsyncStorage.setItem(bubbleColorStorageKey, userBubbleColor).catch(
-      () => {},
-    );
-  }, [userBubbleColor]);
 
   useEffect(() => {
     if (currentChat?.title) {
@@ -527,6 +469,28 @@ export default function ChatThread() {
     );
   };
 
+  const ensureVisionModelConfigured = useCallback(async () => {
+    try {
+      const model = await getSetting('ai.visionModel', DEFAULT_VISION_MODEL);
+      if (model.trim()) return true;
+      showAppDialog(
+        t('chat.attachMenu.visionModelRequiredTitle'),
+        t('chat.attachMenu.visionModelRequiredMessage'),
+        undefined,
+        { variant: 'warning', icon: 'eye-outline' },
+      );
+      return false;
+    } catch (error) {
+      showAppDialog(
+        t('profile.appSettings.errors.open'),
+        error instanceof Error ? error.message : String(error),
+        undefined,
+        { variant: 'danger' },
+      );
+      return false;
+    }
+  }, [t]);
+
   useEffect(() => {
     let active = true;
     void getAppLimits().then(limits => {
@@ -630,15 +594,16 @@ export default function ChatThread() {
         } else void attachPreparedImages([]);
         return;
       }
-      const text = event.clipboardData?.getData('text/plain');
-      if (text) {
-        const start = textarea.selectionStart, end = textarea.selectionEnd;
-        setInput(value => (value.slice(0, start) + text + value.slice(end)).slice(0, 5000));
-      }
       pasteInProgress.current = true;
-      setIsPreparingImage(true);
       void (async () => {
         try {
+          if (!(await ensureVisionModelConfigured())) return;
+          setIsPreparingImage(true);
+          const text = event.clipboardData?.getData('text/plain');
+          if (text) {
+            const start = textarea.selectionStart, end = textarea.selectionEnd;
+            setInput(value => value.slice(0, start) + text + value.slice(end));
+          }
           const assets = await Promise.all(files.slice(0, remainingAttachmentSlots).map(async file => {
             const uri = URL.createObjectURL(file);
             try {
@@ -658,11 +623,12 @@ export default function ChatThread() {
     };
     textarea.addEventListener('paste', paste);
     return () => textarea.removeEventListener('paste', paste);
-  }, [attachPreparedImages, attachedImages.length, attachedDocuments.length, isPreparingImage, isPreparingDocument, remainingAttachmentSlots, sending, t]);
+  }, [attachPreparedImages, attachedImages.length, attachedDocuments.length, ensureVisionModelConfigured, isPreparingImage, isPreparingDocument, remainingAttachmentSlots, sending, t]);
 
   const handlePickFromGallery = async () => {
     setShowAttachMenu(false);
     if (isPreparingImage || isPreparingDocument || pasteInProgress.current) return;
+    if (!(await ensureVisionModelConfigured())) return;
     if (remainingAttachmentSlots <= 0) {
       await attachPreparedImages([]);
       return;
@@ -689,6 +655,7 @@ export default function ChatThread() {
   const handleTakePhoto = async () => {
     setShowAttachMenu(false);
     if (isPreparingImage) return;
+    if (!(await ensureVisionModelConfigured())) return;
     if (remainingAttachmentSlots <= 0) {
       await attachPreparedImages([]);
       return;
@@ -746,7 +713,7 @@ export default function ChatThread() {
           ),
         }));
       }
-      await sendMessage(id, toSend, images, documents);
+      await sendMessage(id, toSend, images, documents, responseMode);
       const sendError = useChatStore.getState().error;
       if (sendError) {
         // Falha de comunicação: devolve tudo ao compositor para o
@@ -774,6 +741,7 @@ export default function ChatThread() {
   const handlePickDocument = async () => {
     if (isPreparingDocument || isPreparingImage || pasteInProgress.current) return;
     setShowAttachMenu(false);
+    if (!(await ensureVisionModelConfigured())) return;
     if (remainingAttachmentSlots <= 0) { await attachPreparedImages([]); return; }
     setIsPreparingDocument(true);
     try {
@@ -807,11 +775,6 @@ export default function ChatThread() {
     } catch (error) { console.error('Could not attach files:', error); }
     finally { setIsPreparingDocument(false); }
   };
-
-  const handleChipPress = useCallback((prompt: string) => {
-    setInput(prompt);
-    requestAnimationFrame(() => inputRef.current?.focus());
-  }, []);
 
   const handleRenameChat = async () => {
     if (!chatTitleInput.trim() || !id) return;
@@ -875,7 +838,7 @@ export default function ChatThread() {
           textStyle={[
             styles.messageText,
             isUser
-              ? { color: "#FFFFFF" }
+              ? { color: colors.textPrimary }
               : {
                   fontFamily: "Inter_400Regular",
                   color: colors.textPrimary,
@@ -883,8 +846,8 @@ export default function ChatThread() {
                   lineHeight: Platform.OS === "web" ? 29 : 26,
                 },
           ]}
-          boldColor={isUser ? "#FFFFFF" : colors.textPrimary}
-          formulaColor={isUser ? "#FFFFFF" : colors.textPrimary}
+          boldColor={colors.textPrimary}
+          formulaColor={colors.textPrimary}
         />
       );
     },
@@ -912,7 +875,7 @@ export default function ChatThread() {
         (/imagem anexada/i.test(item.content || "") ||
           /conte[úu]do extra[íi]do/i.test(item.content || "") ||
           /Conte[úu]do da [Ff]oto/i.test(item.content || "") ||
-          /<oren_attachment_context\b[^>]*type="image"/i.test(
+          /<(?:ostudy|oren)_attachment_context\b[^>]*type="image"/i.test(
             item.content || "",
           ));
 
@@ -920,13 +883,13 @@ export default function ChatThread() {
       // "📄 [Documento: nome.pdf]" no content (o texto extraído nunca chega à
       // mensagem visível — fica só no prompt enviado ao LLM). Extraímos o nome
       // para mostrar um card com ícone, como já fazemos com imagens.
-      const attachmentLabels = (item.content || '').replace(/<oren_attachment_context\b[^>]*>[\s\S]*?<\/oren_attachment_context>/gi, '');
+      const attachmentLabels = (item.content || '').replace(/<(?:ostudy|oren)_attachment_context\b[^>]*>[\s\S]*?<\/(?:ostudy|oren)_attachment_context>/gi, '');
       const documentNames = Array.from(attachmentLabels.matchAll(/📄\s*\[Documento:\s*([^\]]+)\]/gi), match => String((match as RegExpMatchArray)[1]).trim());
       if (!documentNames.length && /📄\s*\[documento anexado\]/i.test(attachmentLabels)) documentNames.push(t('chat.attachMenu.docReady'));
 
       const textWithoutTags = (item.content || "")
         .replace(
-          /<oren_attachment_context\b[^>]*>[\s\S]*?<\/oren_attachment_context>/gi,
+          /<(?:ostudy|oren)_attachment_context\b[^>]*>[\s\S]*?<\/(?:ostudy|oren)_attachment_context>/gi,
           "",
         )
         .replace(
@@ -1007,21 +970,25 @@ export default function ChatThread() {
               </TouchableOpacity>)}
             </View>}
             {!!cleanContent && (
-              <View
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => setSelectedMessageId(selectedMessageId === item.id ? null : item.id)}
                 style={[
                   styles.userBubble,
-                  { backgroundColor: userBubbleColor },
+                  { backgroundColor: colors.surfaceElevated },
                 ]}
               >
                 {renderFormattedText(cleanContent, true)}
-                <Text style={styles.timeUser}>
-                  {format(new Date(item.created_at || Date.now()), "HH:mm", {
-                    locale: dateLocale,
-                  })}
-                </Text>
-              </View>
+              </TouchableOpacity>
             )}
             {!!cleanContent && (
+              <Text style={[styles.timeUser, { color: colors.textTertiary }]}>
+                {format(new Date(item.created_at || Date.now()), "HH:mm", {
+                  locale: dateLocale,
+                })}
+              </Text>
+            )}
+            {!!cleanContent && selectedMessageId === item.id && (
               <View style={styles.userActionsRow}>
                 <MessageActions
                   content={cleanContent}
@@ -1053,12 +1020,6 @@ export default function ChatThread() {
 
       return (
         <View style={styles.tutorMessageRow}>
-          <View style={styles.tutorHeader}>
-            <OrenAvatar size={26} />
-            <Text style={[styles.tutorName, { color: colors.textPrimary }]}>
-              {t("chat.orenName")}
-            </Text>
-          </View>
           {hasImage && (
             <ScrollView
               horizontal
@@ -1080,26 +1041,13 @@ export default function ChatThread() {
               ))}
             </ScrollView>
           )}
-          <View
-            style={[
-              styles.tutorCard,
-              {
-                backgroundColor: "transparent",
-                borderColor: "transparent",
-                borderWidth: 0,
-                paddingHorizontal: 4,
-              },
-            ]}
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => setSelectedMessageId(selectedMessageId === item.id ? null : item.id)}
+            style={{ width: '100%' }}
           >
             {renderFormattedText(cleanContent, false)}
             <WebSourcesPanel sources={item.sources} />
-            <Text
-              style={[styles.timeTutor, { color: colors.textSecondary }]}
-            >
-              {format(new Date(item.created_at || Date.now()), "HH:mm", {
-                locale: dateLocale,
-              })}
-            </Text>
             {/* Quiz/flashcards interativos — vêm no mesmo pedido de
               tutor_reply que gerou o texto (ver backend/tutorEngine),
               zero pedidos extra de rede/IA para renderizar isto. */}
@@ -1110,16 +1058,23 @@ export default function ChatThread() {
                 chatId={id as string}
               />
             )}
+          </TouchableOpacity>
+          <Text style={[styles.timeTutor, { color: colors.textTertiary }]}>
+            {format(new Date(item.created_at || Date.now()), "HH:mm", {
+              locale: dateLocale,
+            })}
+          </Text>
+          {selectedMessageId === item.id && (
             <MessageActions
               content={cleanContent}
               role="tutor"
               align="flex-start"
             />
-          </View>
+          )}
         </View>
       );
     },
-    [colors, dateLocale, id, renderFormattedText, t, userBubbleColor],
+    [colors, dateLocale, id, renderFormattedText, selectedMessageId, t],
   );
 
   const renderMessageWithLayout = useCallback(
@@ -1289,67 +1244,19 @@ export default function ChatThread() {
               scrollEventThrottle={100}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <View style={styles.avatarRing}>
-                    <OrenAvatar size={52} />
-                  </View>
-                  <Text
-                    style={[styles.emptyTitle, { color: colors.textPrimary }, Platform.OS === "web" && { fontSize: 32, lineHeight: 40, textAlign: "center" }]}
-                  >
-                    {t("chat.emptyState.title")}
-                  </Text>
                   <Text
                     style={[
-                      styles.emptySubtitle,
-                      { color: colors.textSecondary },
+                      styles.emptyGreeting,
+                      { color: colors.textPrimary },
+                      Platform.OS === "web" && {
+                        fontSize: 36,
+                        lineHeight: 44,
+                      },
                     ]}
                   >
-                    {t("chat.emptyState.subtitle")}
+                    {t("dashboard.greetings.fallback")}{" "}
+                    {name.trim() || t("dashboard.defaultStudentName")}
                   </Text>
-                  <View style={[styles.promptGrid, Platform.OS === "web" && styles.webPromptGrid]}>
-                    {FEATURE_CHIPS.map((chip) => (
-                      <TouchableOpacity
-                        key={chip.label}
-                        style={[
-                          styles.promptCard,
-                          {
-                            backgroundColor: colors.surface,
-                            borderColor: colors.surfaceElevated
-                          },
-                        ]}
-                        onPress={() => handleChipPress(chip.prompt)}
-                        activeOpacity={0.75}
-                      >
-                        <View
-                          style={[
-                            styles.promptIconBox,
-                            { backgroundColor: colors.primarySoft },
-                          ]}
-                        >
-                          <Ionicons
-                            name={chip.icon}
-                            size={18}
-                            color={colors.primary}
-                          />
-                        </View>
-                        <Text
-                          style={[
-                            styles.promptTitle,
-                            { color: colors.textPrimary },
-                          ]}
-                        >
-                          {chip.label}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.promptDesc,
-                            { color: colors.textSecondary },
-                          ]}
-                        >
-                          {chip.desc}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
                 </View>
               }
               ListFooterComponent={sending ? <TypingIndicator /> : null}
@@ -1455,6 +1362,42 @@ export default function ChatThread() {
           },
         ]}
       >
+        <View style={styles.modeToggleRow}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityState={{ selected: responseMode === "flash" }}
+            onPress={() => setResponseMode("flash")}
+            style={[
+              styles.modeChip,
+              {
+                backgroundColor: responseMode === "flash" ? colors.primarySoft : colors.surface,
+                borderColor: responseMode === "flash" ? colors.primary : colors.border,
+              },
+            ]}
+          >
+            <Ionicons name="flash-outline" size={14} color={responseMode === "flash" ? colors.primary : colors.textSecondary} />
+            <Text style={[styles.modeChipText, { color: responseMode === "flash" ? colors.primary : colors.textSecondary }]}>
+              {t("chat.mode.flash")}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityState={{ selected: responseMode === "deep" }}
+            onPress={() => setResponseMode("deep")}
+            style={[
+              styles.modeChip,
+              {
+                backgroundColor: responseMode === "deep" ? colors.primarySoft : colors.surface,
+                borderColor: responseMode === "deep" ? colors.primary : colors.border,
+              },
+            ]}
+          >
+            <Ionicons name="bulb-outline" size={14} color={responseMode === "deep" ? colors.primary : colors.textSecondary} />
+            <Text style={[styles.modeChipText, { color: responseMode === "deep" ? colors.primary : colors.textSecondary }]}>
+              {t("chat.mode.deep")}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <View
           style={[
             styles.floatingInputCard,
@@ -1475,8 +1418,6 @@ export default function ChatThread() {
           <TextInput
             ref={inputRef}
             style={[styles.textInput, { color: colors.textPrimary }, Platform.OS === "web" && styles.webTextInput]}
-            placeholder={t("chat.inputPlaceholder")}
-            placeholderTextColor={colors.textTertiary}
             value={input}
             onChangeText={setInput}
             onKeyPress={Platform.OS === "web" ? (event) => {
@@ -1492,23 +1433,9 @@ export default function ChatThread() {
             returnKeyType={Platform.OS === 'web' ? undefined : 'send'}
             submitBehavior={Platform.OS === 'web' ? 'newline' : 'submit'}
             onSubmitEditing={Platform.OS === 'web' ? undefined : () => { void handleSend(); }}
-            maxLength={5000}
             autoComplete="off"
             textContentType="none"
           />
-
-          <Text
-            style={[
-              styles.characterCounter,
-              Platform.OS === "web" && styles.webCharacterCounter,
-              {
-                color:
-                  input.length >= 5000 ? colors.error : colors.textTertiary,
-              },
-            ]}
-          >
-            {input.length}/5000
-          </Text>
 
           {sending ? (
             <TouchableOpacity
@@ -1554,6 +1481,9 @@ export default function ChatThread() {
             </TouchableOpacity>
           )}
         </View>
+        <Text style={[styles.aiDisclaimer, { color: colors.textSecondary }]}>
+          {t("chat.aiDisclaimer")}
+        </Text>
       </View>
 
       <AttachmentViewer attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
@@ -1787,35 +1717,6 @@ export default function ChatThread() {
               ]}
             />
 
-            {/* SELETOR DE COR DA BOLHA DO UTILIZADOR */}
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>
-              {t("chat.optionsModal.bubbleColorLabel")}
-            </Text>
-            <View style={styles.colorPickerContainer}>
-              {BUBBLE_COLORS.map((c) => (
-                <TouchableOpacity
-                  key={c}
-                  style={[
-                    styles.colorCircle,
-                    { backgroundColor: c },
-                    userBubbleColor === c && {
-                      borderWidth: 2,
-                      borderColor: colors.textPrimary,
-                    },
-                  ]}
-                  onPress={() => setUserBubbleColor(c)}
-                  activeOpacity={0.7}
-                />
-              ))}
-            </View>
-
-            <View
-              style={[
-                styles.modalDivider,
-                { backgroundColor: colors.border, marginTop: 14 },
-              ]}
-            />
-
             <TouchableOpacity
               style={[styles.deleteBtn, { backgroundColor: colors.errorSoft }]}
               onPress={handleDeleteChat}
@@ -1877,35 +1778,20 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
   },
   webInputCard: {
-    minHeight: 104,
+    minHeight: 64,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 8,
     borderRadius: 24,
     alignItems: "flex-end",
   },
   webTextInput: {
-    // Three complete lines plus the inherited 6px top/bottom padding.
-    // A 72px box scrolled internally before the third line could fit.
-    minHeight: 84,
-    maxHeight: 180,
+    minHeight: 40,
+    maxHeight: 144,
     minWidth: 0,
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 22,
     textAlignVertical: "top",
-    // Let the browser grow the textarea without resetting its height/caret
-    // on each keystroke. Older browsers retain the three-row scrollable box.
     ...({ fieldSizing: "content", resize: "none" } as const),
-  },
-  webCharacterCounter: {
-    // Changing digits must never steal width from the adjacent textarea.
-    width: 64,
-    flexShrink: 0,
-    textAlign: "right",
-    fontVariant: ["tabular-nums"],
-  },
-  webPromptGrid: {
-    maxWidth: 680,
-    alignSelf: "center",
   },
   safeArea: { flex: 1 },
   header: {
@@ -1936,43 +1822,17 @@ const styles = StyleSheet.create({
   listContent: { paddingVertical: 20, paddingHorizontal: 16, flexGrow: 1 },
   emptyContainer: {
     flex: 1,
-    paddingTop: 30,
-    paddingBottom: 20,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 12,
   },
-  avatarRing: {
-    marginBottom: 12,
-  },
-  emptyTitle: {
+  emptyGreeting: {
     fontFamily: "DMSans_700Bold",
-    fontSize: 20,
-    letterSpacing: -0.3,
-  },
-  emptySubtitle: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 14,
-    marginTop: 6,
+    fontSize: 28,
+    lineHeight: 36,
+    letterSpacing: -0.5,
     textAlign: "center",
-    lineHeight: 21,
-    maxWidth: 290,
   },
-  promptGrid: { width: "100%", marginTop: 28, gap: 10 },
-  promptCard: {
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-  },
-  promptIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
-  promptTitle: { fontFamily: "DMSans_700Bold", fontSize: 14 },
-  promptDesc: { fontFamily: "DMSans_400Regular", fontSize: 12, marginTop: 2 },
   userMessageRow: { width: "100%", alignItems: "flex-end", marginVertical: 8 },
   userActionsRow: {
     flexDirection: "row",
@@ -1990,26 +1850,10 @@ const styles = StyleSheet.create({
   userBubble: {
     maxWidth: "82%",
     borderRadius: 18,
-    borderBottomRightRadius: 4,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   tutorMessageRow: { width: "100%", marginVertical: 10 },
-  tutorHeader: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-  tutorName: {
-    fontFamily: "DMSans_600SemiBold",
-    fontSize: 16,
-    letterSpacing: -0.2,
-    marginLeft: 8,
-    marginRight: 6,
-  },
-  tutorCard: {
-    borderWidth: 1,
-    borderRadius: 16,
-    borderTopLeftRadius: 4,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
   standaloneImageWrapUser: {
     borderRadius: 16,
     overflow: "hidden",
@@ -2072,8 +1916,7 @@ const styles = StyleSheet.create({
   timeUser: {
     fontFamily: "DMSans_400Regular",
     fontSize: 10,
-    color: "rgba(255,255,255,0.7)",
-    marginTop: 6,
+    marginTop: 4,
     textAlign: "right",
   },
   timeTutor: { fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 4 },
@@ -2162,13 +2005,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     marginRight: 8,
   },
-  characterCounter: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 10,
-    alignSelf: "flex-end",
-    marginRight: 4,
-    marginBottom: 2,
-  },
   floatingInputCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -2201,6 +2037,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   modeChipText: { fontFamily: "DMSans_600SemiBold", fontSize: 12 },
+  aiDisclaimer: {
+    marginTop: 6,
+    fontFamily: "DMSans_400Regular",
+    fontSize: 11,
+    textAlign: "center",
+  },
   textInput: {
     flex: 1,
     fontFamily: "DMSans_500Medium",
@@ -2329,20 +2171,6 @@ const styles = StyleSheet.create({
   },
   saveBtnText: { fontFamily: "DMSans_700Bold", fontSize: 14, color: "#FFFFFF" },
   modalDivider: { height: 1, marginVertical: 14 },
-  colorPickerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 8,
-    marginTop: 4,
-  },
-  colorCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
   deleteBtn: {
     flexDirection: "row",
     alignItems: "center",

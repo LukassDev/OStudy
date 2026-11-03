@@ -4,7 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 /**
  * Hook simples para copiar texto para a área de transferência com feedback
  * visual breve (ex: trocar o ícone "copy" por um "check" durante ~1.5s).
- * Usado tanto nas mensagens do Oren como nas do utilizador (ver
+ * Usado tanto nas mensagens do tutor como nas do utilizador (ver
  * MessageActions.tsx) — não faz nenhum pedido de rede nem chamada à IA.
  */
 export function useCopyToClipboard(resetDelayMs = 1500) {

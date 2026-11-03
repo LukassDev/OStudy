@@ -6,6 +6,7 @@ import {
   listGrades,
   updateGrade as persistGrade,
 } from '../db/repositories/grades.repo';
+import { useStudyStore } from './studyStore';
 
 export interface Grade {
   id: string;
@@ -73,17 +74,26 @@ export const useGradesStore = create<GradesState>((set, get) => ({
 
   createGrade: async (data) => {
     await insertGrade(data);
-    await get().fetchGrades(data.space_id);
+    await Promise.all([
+      get().fetchGrades(data.space_id),
+      useStudyStore.getState().load(true, ['grades']),
+    ]);
   },
 
   updateGrade: async (id, spaceId, data) => {
     await persistGrade(id, spaceId, data);
-    await get().fetchGrades(spaceId);
+    await Promise.all([
+      get().fetchGrades(spaceId),
+      useStudyStore.getState().load(true, ['grades']),
+    ]);
   },
 
   deleteGrade: async (id, spaceId) => {
     await removeGrade(id, spaceId);
-    await get().fetchGrades(spaceId);
+    await Promise.all([
+      get().fetchGrades(spaceId),
+      useStudyStore.getState().load(true, ['grades']),
+    ]);
   },
 
   weightedAverage: () => {

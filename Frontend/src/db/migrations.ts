@@ -3,7 +3,7 @@ import { DATABASE_VERSION, INITIAL_SCHEMA } from './schema';
 
 const REQUIRED_TABLES = [
   'profile', 'spaces', 'active_spaces', 'content_topics', 'chats', 'messages',
-  'resources', 'calendar_events', 'grades', 'student_model', 'topic_knowledge',
+  'resources', 'calendar_events', 'classroom_ignored_events', 'grades', 'student_model', 'topic_knowledge',
   'episodic_memory', 'semantic_memory', 'safety_log', 'settings', 'timetable_classes',
 ];
 
@@ -27,6 +27,12 @@ export async function migrateDatabase(database: SQLiteDatabase): Promise<void> {
   if (currentVersion < DATABASE_VERSION || missingTables.length > 0) {
     await database.withTransactionAsync(async () => {
       await database.execAsync(INITIAL_SCHEMA);
+      const spaceColumns = await database.getAllAsync<{ name: string }>(
+        'PRAGMA table_info("spaces")',
+      );
+      if (!spaceColumns.some(column => column.name === 'google_classroom_course_id')) {
+        await database.execAsync('ALTER TABLE spaces ADD COLUMN google_classroom_course_id TEXT');
+      }
       await database.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
     });
   }

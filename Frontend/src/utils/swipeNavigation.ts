@@ -1,4 +1,4 @@
-export const SPACE_TAB_ORDER = ['chats', 'plano', 'conteudo', 'calendario', 'avaliacoes', 'recursos'] as const;
+export const SPACE_TAB_ORDER = ['avaliacoes', 'calendario', 'classroom', 'chats', 'conteudo', 'recursos'] as const;
 export type SpaceTab = typeof SPACE_TAB_ORDER[number];
 export function isHorizontalSwipe(dx: number, dy: number, touches = 1): boolean {
   return touches === 1 && Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.8;

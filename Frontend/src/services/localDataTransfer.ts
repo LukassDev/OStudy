@@ -12,10 +12,11 @@ import { migrateDatabase } from '../db/migrations';
 
 const TABLES = [
   'profile', 'spaces', 'active_spaces', 'content_topics', 'chats', 'messages',
-  'resources', 'calendar_events', 'grades', 'student_model', 'topic_knowledge',
+  'resources', 'calendar_events', 'classroom_ignored_events', 'grades', 'student_model', 'topic_knowledge',
   'episodic_memory', 'semantic_memory', 'safety_log', 'settings', 'timetable_classes',
 ] as const;
 const DELETE_ORDER = [...TABLES].reverse();
+const SQLITE_HEADER = 'SQLite format 3\0';
 
 function bytesToBase64(bytes: Uint8Array): string {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -73,11 +74,18 @@ async function readPickedBytes(asset: DocumentPicker.DocumentPickerAsset): Promi
 }
 
 async function validateImport(bytes: Uint8Array): Promise<SQLiteDatabase> {
+  const hasSqliteHeader = bytes.length >= SQLITE_HEADER.length
+    && [...SQLITE_HEADER].every((character, index) => bytes[index] === character.charCodeAt(0));
+  if (!hasSqliteHeader) {
+    throw new Error('O ficheiro não tem o formato de uma base SQLite. Selecione o ficheiro .db original, não um ZIP nem uma cópia incompleta.');
+  }
+
   let imported: SQLiteDatabase;
   try {
     imported = await deserializeDatabaseAsync(bytes);
-  } catch {
-    throw new Error('O ficheiro selecionado não é uma base de dados SQLite válida.');
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`O ficheiro tem cabeçalho SQLite, mas não foi possível abri-lo. Pode estar incompleto, corrompido ou ser incompatível com o SQLite desta versão. Detalhe: ${reason}`);
   }
   try {
     const { user_version: version } = await imported.getFirstAsync<{ user_version: number }>('PRAGMA user_version') ?? { user_version: 0 };
@@ -137,6 +145,7 @@ export async function pickAndImportLocalDatabase(
     if (!confirmed) return false;
     const current = await getDatabase();
     await current.withTransactionAsync(async () => {
+      await current.execAsync('PRAGMA defer_foreign_keys = ON');
       for (const table of DELETE_ORDER) await current.runAsync(`DELETE FROM "${table}"`);
       for (const table of TABLES) {
         const columns = await current.getAllAsync<{ name: string }>(`PRAGMA table_info("${table}")`);
@@ -145,7 +154,14 @@ export async function pickAndImportLocalDatabase(
         if (!rows.length || !names.length) continue;
         const placeholders = names.map(() => '?').join(', ');
         const sql = `INSERT INTO "${table}" (${names.map(name => `"${name}"`).join(', ')}) VALUES (${placeholders})`;
-        for (const row of rows) await current.runAsync(sql, ...names.map(name => row[name] as string | number | null | Uint8Array));
+        for (const [index, row] of rows.entries()) {
+          try {
+            await current.runAsync(sql, ...names.map(name => row[name] as string | number | null | Uint8Array));
+          } catch (error) {
+            const reason = error instanceof Error ? error.message : String(error);
+            throw new Error(`Falha ao importar a tabela "${table}", registo ${index + 1}: ${reason}`);
+          }
+        }
       }
       const { user_version: version } = await imported.getFirstAsync<{ user_version: number }>('PRAGMA user_version') ?? { user_version: DATABASE_VERSION };
       await current.execAsync(`PRAGMA user_version = ${Math.min(version, DATABASE_VERSION)}`);

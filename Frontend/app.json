@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "OStudy",
-    "slug": "oren-study",
-    "version": "1.9.0",
+    "slug": "ostudy",
+    "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "orenstudy",
+    "icon": "./assets/images/ostudyNewIcon.png",
+    "scheme": "ostudy",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "locales": {
@@ -25,12 +25,10 @@
       }
     },
     "android": {
-      "package": "com.orenstudy.app",
+      "package": "com.ostudy.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#633BB3",
+        "foregroundImage": "./assets/images/ostudyNewIcon.png"
       },
       "edgeToEdgeEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
@@ -49,14 +47,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/ostudyNewIcon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/ostudyNewIcon.png",
           "imageWidth": 140,
           "resizeMode": "contain",
           "backgroundColor": "#F8FAFC",
@@ -87,7 +85,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9056de90-ba0d-4d78-9672-39e08f61df80"
+        "projectId": "c5c9d848-2f59-4f40-9233-f8f67e0384cd"
       }
     },
     "owner": "buildss"

@@ -17,53 +17,46 @@
     "preparingStudySpace": "Preparando tu espacio de estudio..."
   },
   "onboarding": {
-    "step1": {
-      "title": "Bienvenido a OStudy.",
-      "subtitle": "Lleva tus estudios a otro nivel."
-    },
-    "step2": {
-      "title": "Conoce a Oren, tu tutor inteligente",
-      "text": "Oren sigue tu progreso, crea planes de estudio a tu medida y te ayuda a entender la materia, en cualquier momento y en cualquier Espacio."
-    },
-    "step3": {
-      "title": "¿Cómo te llamas?",
-      "subtitle": "Tu nombre nos ayuda a personalizar tu experiencia de estudio.",
-      "namePlaceholder": "Juan Pérez",
-      "languageLabel": "Idioma de la app",
-      "languageHint": "Puedes cambiarlo cuando quieras en tu Perfil."
-    },
-    "step4": {
-      "title": "¿Cuál es tu objetivo?",
-      "subtitle": "Así el Tutor puede adaptarse a ti.",
-      "goals": {
-        "improveGrades": "Mejorar notas",
-        "prepareExams": "Preparar exámenes",
-        "learnSomethingNew": "Aprender algo nuevo",
-        "organizeStudies": "Organizar estudios",
-        "other": "Otro"
-      },
-      "customGoalPlaceholder": "Ej: Aprender a programar"
-    },
-    "step5": {
-      "title": "Elige tu avatar",
-      "subtitle": "Puedes cambiarlo cuando quieras, en tu Perfil.",
-      "initials": "Iniciales"
-    },
-    "step6": {
-      "title": "¿Modo claro u oscuro?",
-      "subtitle": "Puedes cambiarlo cuando quieras, en tu Perfil.",
-      "light": "Claro",
-      "dark": "Oscuro",
-      "spaceHint": "Puedes crear tu primer espacio de estudio desde el panel."
-    },
-    "nextLabel": "Continuar",
-    "startLabel": "Empezar a estudiar",
+    "title": "Configura tu perfil",
+    "defaultName": "Usuario",
+    "nameLabel": "Nombre",
+    "avatarLabel": "Elige tu avatar",
+    "languageLabel": "Idioma de la app",
+    "themeLabel": "Apariencia",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "startLabel": "Empezar",
     "errors": {
-      "nameRequired": "Dinos tu nombre.",
-      "goalRequired": "Elige un objetivo.",
-      "customGoalRequired": "Escribe tu objetivo.",
+      "nameRequired": "Escribe tu nombre.",
       "saveFailed": "Error al guardar el perfil. Inténtalo de nuevo."
     }
+  },
+  "welcome": {
+    "messages": {
+      "dawn": [
+        "Un nuevo comienzo. ¿Estudiamos?",
+        "La calma del amanecer ayuda a concentrarse.",
+        "Empieza un nuevo día, una nueva idea."
+      ],
+      "morning": [
+        "¡Buenos días! Que hoy esté lleno de aprendizajes.",
+        "¡Buenos días! Paso a paso.",
+        "¿Empezamos con una buena idea?"
+      ],
+      "afternoon": [
+        "¡Buenas tardes! Vas por buen camino.",
+        "Cada pequeño paso te acerca a tu meta.",
+        "Aún hay tiempo para aprender algo nuevo."
+      ],
+      "night": [
+        "¡Buenas noches! Terminemos el día con concentración.",
+        "Un poco más de estudio, a tu ritmo.",
+        "Me alegra verte. ¿Empezamos?"
+      ]
+    },
+    "fallback": "¡Hola! Qué bueno tenerte aquí.",
+    "loadError": "No se pudo cargar el ajuste de bienvenida.",
+    "retry": "Intentar de nuevo"
   },
   "dashboard": {
     "greetings": {
@@ -102,26 +95,19 @@
       "spaceCount_other": "Tienes {{count}} Spaces organizados. ¿Has pensado en repasar los temas más antiguos?"
     },
     "defaultStudentName": "Estudiante",
-    "orenSays": "Oren dice: ",
     "stats": {
-      "spaces": "Spaces",
-      "chats": "Chats"
+      "spaces": "Spaces"
     },
-    "searchPlaceholder": "Buscar materias o chats...",
+    "searchPlaceholder": "Buscar Spaces...",
     "sections": {
       "yourSpaces": "Tus Spaces",
       "createNew": "+ Crear Nuevo",
-      "recentChats": "Conversaciones recientes",
       "continueStudying": "Continuar Estudiando"
     },
     "emptySpaces": {
       "title": "Crea tu primer Space",
       "subtitle": "Un Space organiza apuntes, tareas y conversaciones de una materia.",
       "action": "Crear Space"
-    },
-    "emptyChats": {
-      "title": "Aún no hay chats recientes",
-      "subtitle": "Cuando empieces a estudiar con Oren, tus chats aparecerán aquí."
     },
     "spaceSubLabel_one": "{{count}} subespacio",
     "spaceSubLabel_other": "{{count}} subespacios",
@@ -142,7 +128,6 @@
       "privacySettings": "Privacidad y ajustes"
     },
     "namePlaceholder": "Tu nombre",
-    "goalPlaceholder": "Ej: Sacar un 10 en Matemáticas",
     "saveChanges": "Guardar cambios",
     "theme": {
       "light": "Claro",
@@ -150,9 +135,15 @@
     },
     "language": {
       "rowLabel": "Idioma de la app",
-      "hint": "Esto solo cambia la interfaz de la app. Oren siempre responde en el idioma en que le escribas."
+      "hint": "Esto solo cambia la interfaz de la app. OStudy siempre responde en el idioma en que le escribas."
     },
     "appSettings": {
+      "welcome": {
+        "title": "Pantalla de bienvenida",
+        "description": "Muestra un saludo al abrir la app, antes de continuar.",
+        "enabled": "Mostrar al abrir",
+        "disabled": "No mostrar al abrir"
+      },
       "ai": {
         "title": "Ajustes de IA",
         "keyHint": "La clave se guarda de forma segura en este dispositivo.",
@@ -173,7 +164,7 @@
       },
       "limits": {
         "title": "Límites del tutor",
-        "description": "Ajusta los límites del tutor, los adjuntos, los recursos, los cuestionarios y las vistas previas.",
+        "description": "Ajusta los límites del tutor y de los recursos del Space.",
         "hint": "Usa números enteros; los cambios se aplican a las próximas solicitudes.",
         "save": "Guardar límites",
         "restore": "Restaurar límites predeterminados",
@@ -284,7 +275,9 @@
         "interval": "No se pudo guardar el intervalo",
         "backup": "No se pudo guardar la copia",
         "import": "Error al importar",
-        "delete": "No se pudieron eliminar los datos"
+        "delete": "No se pudieron eliminar los datos",
+        "loadWelcome": "No se pudo cargar el ajuste de bienvenida",
+        "saveWelcome": "No se pudo guardar el ajuste de bienvenida"
       }
     }
   },
@@ -475,10 +468,10 @@
     },
     "attachedImageFallback": "梼 Imagen adjunta",
     "analyzedImageLabel": "Imagen analizada",
-    "orenName": "Oren",
+    "assistantName": "OStudy",
     "scrollToLatest": "Ir al último mensaje",
     "emptyState": {
-      "title": "¡Hola! Soy Oren",
+      "title": "¡Hola! Soy OStudy",
       "subtitle": "Tu tutor personal de IA. ¿Qué quieres practicar, repasar o resolver hoy?"
     },
     "errors": {
@@ -489,7 +482,7 @@
       "noActiveSession": "Sin sesión activa. Inicia sesión de nuevo.",
       "spaceNotFound": "No se encontró el ID del Space para este chat.",
       "sessionExpired": "Sesión caducada. Inicia sesión de nuevo.",
-      "maintenanceMode": "Oren está en mantenimiento en este momento. Inténtalo más tarde.",
+      "maintenanceMode": "OStudy está en mantenimiento en este momento. Inténtalo más tarde.",
       "communicationError": "Error al comunicarse con el Tutor.",
       "unsupportedVideoTitle": "Vídeo no compatible",
       "unsupportedVideoMessage": "El chat acepta imágenes y documentos, pero no vídeos."
@@ -504,9 +497,10 @@
       "loadingTitle": "Cargando imagen...",
       "loadingSubtitle": "Solo un momento",
       "attachedTitle": "Imagen de Ejercicio Adjunta",
-      "attachedSubtitle": "Lista para ser analizada por Oren"
+      "attachedSubtitle": "Lista para ser analizada por OStudy"
     },
     "inputPlaceholder": "Pide una explicación, envía una duda...",
+    "aiDisclaimer": "La IA puede cometer errores.",
     "mode": {
       "flash": "Flash",
       "deep": "Deep"
@@ -528,14 +522,15 @@
       "docTooBigTitle": "Archivo demasiado grande",
       "docTooBigMessage": "El documento no puede superar los {{limit}} MiB.",
       "imageTooBigTitle": "Imagen demasiado grande",
-      "imageTooBigMessage": "Incluso después de comprimirla, la imagen supera los {{limit}} MiB. Elige o toma una imagen más pequeña."
+      "imageTooBigMessage": "Incluso después de comprimirla, la imagen supera los {{limit}} MiB. Elige o toma una imagen más pequeña.",
+      "visionModelRequiredTitle": "Se requiere un modelo de visión",
+      "visionModelRequiredMessage": "Configura y guarda el ID del modelo de visión en Perfil > Ajustes de la app > IA antes de adjuntar imágenes o documentos."
     },
     "optionsModal": {
       "title": "Opciones de la Conversación",
       "nameLabel": "Nombre de la conversación",
       "namePlaceholder": "Ej: Resumen de Historia",
       "saveNameButton": "Guardar Nombre",
-      "bubbleColorLabel": "Color de tus mensajes",
       "deleteButton": "Eliminar Conversación"
     },
     "typingPhases": [
@@ -583,7 +578,6 @@
     "searchPlaceholder": "Buscar Spaces...",
     "sections": {
       "favorites": "Favoritos",
-      "recentChats": "Chats Recientes",
       "spaces": "Spaces"
     },
     "noResults": "Sin resultados",
@@ -637,14 +631,13 @@
     "modulesTitle": "Módulos del plan",
     "empty": {
       "title": "Aún no tienes un plan para este Space",
-      "subtitle": "Habla con Oren en el chat y pídele, por ejemplo: \"arma un plan de estudio para esta materia\". Los módulos aparecerán aquí automáticamente a medida que conversen.",
-      "action": "Iniciar chat con Oren"
+      "subtitle": "Habla con OStudy en el chat y pídele, por ejemplo: \"arma un plan de estudio para esta materia\". Los módulos aparecerán aquí automáticamente a medida que conversen.",
+      "action": "Iniciar chat con OStudy"
     }
   },
   "spaces": {
     "tabs": {
-      "chats": "Oren",
-      "plan": "Plan",
+      "chats": "Chat",
       "content": "Contenido",
       "calendar": "Calendario",
       "grades": "Notas",
@@ -728,6 +721,9 @@
     "dragSpacesHint": "Mantén pulsado un Space para moverlo. Desliza normalmente para ver los demás. Pulsa Listo para guardar.",
     "upcomingEvents": "Próximos eventos",
     "noUpcomingEvents": "No hay eventos próximos.",
+    "todayLabel": "Hoy",
+    "tomorrowLabel": "Mañana",
+    "noUpcomingLessons": "No hay próximas clases.",
     "globalAverage": "Media global de notas",
     "chooseModules": "Selecciona los módulos para ver tu media general.",
     "timetable": "Horario",

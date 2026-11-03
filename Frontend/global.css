@@ -25,9 +25,9 @@
  * .dark = tema Escuro (ativado pelo NativeWind via colorScheme.set('dark'))
  */
 :root {
-  --color-background: 248 250 252;
-  --color-surface: 255 255 255;
-  --color-surfaceElevated: 241 243 244;
+  --color-background: 255 255 255;
+  --color-surface: 243 243 243;
+  --color-surfaceElevated: 243 243 243;
   --color-border: 218 220 224;
 
   --color-textPrimary: 32 33 36;
@@ -49,10 +49,10 @@
 }
 
 .dark {
-  --color-background: 20 19 18;
-  --color-surface: 29 28 26;
-  --color-surfaceElevated: 37 35 32;
-  --color-border: 46 44 41;
+  --color-background: 25 25 25;
+  --color-surface: 37 37 37;
+  --color-surfaceElevated: 47 47 47;
+  --color-border: 56 56 56;
 
   --color-textPrimary: 240 237 232;
   --color-textSecondary: 155 149 144;
@@ -71,4 +71,3 @@
   --color-warning: 212 154 42;
   --color-warningSoft: 42 32 16;
 }
-

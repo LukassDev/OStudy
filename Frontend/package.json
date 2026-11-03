@@ -1,7 +1,7 @@
 {
   "name": "ostudy",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -35,6 +35,7 @@
     "babel-preset-expo": "~54.0.10",
     "date-fns": "^4.4.0",
     "expo": "~54.0.37",
+    "expo-auth-session": "^58.0.16",
     "expo-blur": "~15.0.7",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.14",

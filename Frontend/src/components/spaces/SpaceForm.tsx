@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSpaceStore, Space } from '../../stores/spaceStore';
@@ -19,6 +20,9 @@ import { SPACE_COLOR_MAP, useThemeColors } from '../../constants/theme';
 
 import { SPACE_ICONS } from '../../utils/spaceIcons';
 import { SpaceIcon } from './SpaceIcon';
+import { hasClassroomConnection } from '../../services/classroom/auth';
+import { listCourses } from '../../services/classroom/api';
+import type { ClassroomCourse } from '../../services/classroom/api';
 
 const ICONS = SPACE_ICONS;
 const COLOR_KEYS = Object.keys(SPACE_COLOR_MAP);
@@ -37,6 +41,11 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
   const [name, setName] = useState(initial?.name || '');
   const [icon, setIcon] = useState(initial?.icon || ICONS[0]);
   const [color, setColor] = useState(initial?.color || 'blue');
+  const [googleClassroomCourseId, setGoogleClassroomCourseId] = useState(initial?.google_classroom_course_id || '');
+  const [classroomCourses, setClassroomCourses] = useState<ClassroomCourse[]>([]);
+  const [classroomCoursesLoading, setClassroomCoursesLoading] = useState(false);
+  const [classroomCoursesError, setClassroomCoursesError] = useState('');
+  const [isClassroomPanelOpen, setIsClassroomPanelOpen] = useState(true);
   const [isFavorite, setIsFavorite] = useState(initial?.is_favorite || false);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -47,8 +56,38 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
     setName(initial?.name || '');
     setIcon(initial?.icon || ICONS[0]);
     setColor(initial?.color || 'blue');
+    setGoogleClassroomCourseId(initial?.google_classroom_course_id || '');
     setIsFavorite(initial?.is_favorite || false);
   }, [initial]);
+
+  const loadClassroomCourses = useCallback(async (isActive: () => boolean = () => true) => {
+    setClassroomCoursesLoading(true);
+    setClassroomCoursesError('');
+    try {
+      const connected = await hasClassroomConnection();
+      if (!isActive()) return;
+      if (!connected) {
+        setClassroomCourses([]);
+        setClassroomCoursesError('O Google Classroom não está ligado. Liga-o nas definições do perfil e tenta novamente.');
+        return;
+      }
+
+      const courses = await listCourses();
+      if (isActive()) setClassroomCourses(courses);
+    } catch (caught) {
+      if (!isActive()) return;
+      setClassroomCourses([]);
+      setClassroomCoursesError(caught instanceof Error ? caught.message : 'Não foi possível carregar as turmas do Google Classroom.');
+    } finally {
+      if (isActive()) setClassroomCoursesLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    void loadClassroomCourses(() => active);
+    return () => { active = false; };
+  }, [loadClassroomCourses]));
 
   const activeColorHex = SPACE_COLOR_MAP[color] || colors.primary;
   // No web o formulário é compactado para caber todo no modal, sem scroll.
@@ -69,6 +108,7 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
           parent_id: defaultParentId,
           icon,
           color,
+          google_classroom_course_id: googleClassroomCourseId || null,
           is_favorite: isFavorite,
         });
       } else if (initial) {
@@ -76,6 +116,7 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
           name: name.trim(),
           icon,
           color,
+          google_classroom_course_id: googleClassroomCourseId || null,
           is_favorite: isFavorite,
         });
       }
@@ -141,34 +182,29 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
         {/* Live Card Preview */}
         <View
           className={compact
-            ? 'flex-row items-center justify-center gap-4 px-5 py-4 mb-5 bg-surface rounded-2xl border border-border shadow-sm'
-            : 'items-center justify-center p-5 mb-6 bg-surface rounded-[18px] border border-border shadow-sm'}
+            ? 'mb-5 flex-row items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3'
+            : 'mb-6 flex-row items-center justify-center gap-4 rounded-xl border border-border bg-surface px-4 py-4'}
         >
           <View
-            className={compact
-              ? 'w-12 h-12 rounded-xl items-center justify-center shadow-md'
-              : 'w-16 h-16 rounded-2xl items-center justify-center mb-1 shadow-md'}
+            className={compact ? 'h-10 w-10 items-center justify-center rounded-lg' : 'mb-1 h-14 w-14 items-center justify-center rounded-xl'}
             style={{ backgroundColor: activeColorHex }}
           >
-            <SpaceIcon name={icon} size={compact ? 24 : 32} color="#FFFFFF" />
+            <SpaceIcon name={icon} size={compact ? 20 : 28} color="#FFFFFF" />
           </View>
-          <View style={compact ? { flexShrink: 1 } : undefined}>
+          <View style={compact ? { flexShrink: 1 } : { alignItems: 'center' }}>
             <Text
-              className={compact
-                ? 'text-lg font-bold text-textPrimary'
-                : 'text-lg font-bold text-textPrimary text-center'}
+              className={compact ? 'text-base font-semibold text-textPrimary' : 'text-lg font-semibold text-textPrimary'}
               numberOfLines={1}
             >
               {name.trim() || t('spaces.form.namePlaceholderPreview')}
             </Text>
 
             {isFavorite && (
-              <View className={compact
-                ? 'flex-row items-center gap-1.5 mt-0.5'
-                : 'flex-row items-center gap-1.5 mt-2 px-3 py-1'}
-              >
+              <View className={compact ? 'mt-1 flex-row items-center gap-1.5' : 'mt-2 flex-row items-center gap-1.5'}>
                 <Ionicons name="star" size={12} color={colors.warning} />
-                <Text className="text-xs font-semibold text-warning">{t('spaces.form.favoriteBadge')}</Text>
+                <Text className="text-[10px] font-semibold uppercase tracking-[0.08em] text-warning">
+                  {t('spaces.form.favoriteBadge')}
+                </Text>
               </View>
             )}
           </View>
@@ -176,15 +212,13 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
 
         {/* Input: Nome */}
         <View className={compact ? 'mb-5' : 'mb-6'}>
-          <Text className={compact
-            ? 'text-xs font-bold text-textTertiary mb-2.5 uppercase tracking-wider text-center'
-            : 'text-xs font-bold text-textTertiary mb-2 uppercase tracking-wider'}>
+          <Text className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-textTertiary">
             {t('spaces.form.nameLabel')}
           </Text>
           <TextInput
             className={compact
-              ? 'bg-surface rounded-lg px-4 py-3 text-textPrimary text-sm border border-border'
-              : 'bg-surface rounded-lg px-4 py-3.5 text-textPrimary text-base border border-border'}
+              ? 'rounded-lg border border-border bg-background px-3.5 py-3 text-sm text-textPrimary'
+              : 'rounded-lg border border-border bg-background px-4 py-3.5 text-base text-textPrimary'}
             placeholder={t('spaces.form.namePlaceholder')}
             placeholderTextColor={colors.textTertiary}
             value={name}
@@ -193,27 +227,19 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
           />
         </View>
 
-      {/* Selector: Ícone (Centralizado) */}
+        {/* Selector: Ícone */}
         <View className={compact ? 'mb-5' : 'mb-6'}>
-          <Text className={compact
-              ? 'text-xs font-bold text-textTertiary mb-3 uppercase tracking-wider text-center'
-              : 'text-xs font-bold text-textTertiary mb-3 uppercase tracking-wider text-center'}>
+          <Text className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-textTertiary">
             {t('spaces.form.iconLabel')}
           </Text>
-          <View
-            className="rounded-2xl"
-            style={{ backgroundColor: colors.background, padding: compact ? 6 : 12 }}
-          >
+          <View className="rounded-xl border border-border bg-surface p-2">
             <ScrollView
-              style={{ maxHeight: compact ? 120 : 240 }}
+              style={{ maxHeight: compact ? 120 : 220 }}
               nestedScrollEnabled
               showsVerticalScrollIndicator
               persistentScrollbar
             >
-              <View
-                className="flex-row flex-wrap justify-center items-center"
-                style={{ padding: 4, gap: compact ? 5 : 12 }}
-              >
+              <View className="flex-row flex-wrap items-center justify-center" style={{ gap: compact ? 8 : 10 }}>
                 {ICONS.map((i) => {
                   const isSelected = icon === i;
                   return (
@@ -224,13 +250,10 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
                       accessibilityLabel={i.replace('subject:', '').replace(/-/g, ' ')}
                       onPress={() => setIcon(i)}
                       activeOpacity={0.7}
-                      className={compact
-                        ? 'rounded-lg items-center justify-center border'
-                        : 'w-13 h-13 rounded-2xl items-center justify-center border'}
+                      className={compact ? 'h-8 w-8 items-center justify-center rounded-lg border' : 'h-12 w-12 items-center justify-center rounded-xl border'}
                       style={{
-                        ...(compact ? { width: 28, height: 28 } : {}),
-                        backgroundColor: isSelected ? activeColorHex : colors.surface,
-                        borderColor: isSelected ? activeColorHex : 'rgba(0,0,0,0.05)',
+                        backgroundColor: isSelected ? activeColorHex : colors.background,
+                        borderColor: isSelected ? activeColorHex : colors.border,
                       }}
                     >
                       <SpaceIcon
@@ -246,18 +269,13 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
           </View>
         </View>
 
-        {/* Selector: Cor (Centralizada) */}
+        {/* Selector: Cor */}
         <View className={compact ? 'mb-5' : 'mb-6'}>
-          <Text className={compact
-              ? 'text-xs font-bold text-textTertiary mb-3 uppercase tracking-wider text-center'
-              : 'text-xs font-bold text-textTertiary mb-3 uppercase tracking-wider text-center'}>
+          <Text className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-textTertiary">
             {t('spaces.form.colorLabel')}
           </Text>
           <View
-            className={compact
-              ? 'flex-row flex-wrap justify-center items-center gap-3 px-3 py-3 rounded-2xl'
-              : 'flex-row flex-wrap justify-center items-center gap-3 p-4 rounded-2xl'}
-            style={{ backgroundColor: colors.surface }}
+            className={compact ? 'flex-row flex-wrap items-center justify-center gap-3 rounded-xl border border-border bg-surface px-3 py-3' : 'flex-row flex-wrap items-center justify-center gap-3 rounded-xl border border-border bg-surface p-4'}
           >
             {COLOR_KEYS.map((c) => {
               const isSelected = color === c;
@@ -267,34 +285,31 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
                   key={c}
                   onPress={() => setColor(c)}
                   activeOpacity={0.8}
-                  className={compact
-                    ? 'w-7 h-7 rounded-full items-center justify-center'
-                    : 'w-10 h-10 rounded-full items-center justify-center'}
+                  className={compact ? 'h-7 w-7 items-center justify-center rounded-full' : 'h-9 w-9 items-center justify-center rounded-full'}
                   style={{
                     backgroundColor: hex,
-                    transform: [{ scale: isSelected ? 1.15 : 1 }],
-                    borderWidth: isSelected ? 1 : 0,
-                    borderColor: colors.textPrimary,
+                    borderWidth: isSelected ? 2 : 0,
+                    borderColor: colors.background,
+                    transform: [{ scale: isSelected ? 1.08 : 1 }],
                   }}
                 >
-                  {isSelected && <Ionicons name="checkmark" size={compact ? 14 : 18} color="#FFFFFF" />}
+                  {isSelected && <Ionicons name="checkmark" size={compact ? 12 : 16} color="#FFFFFF" />}
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
+
         {/* Card: Favorito Toggle */}
         <TouchableOpacity
           activeOpacity={0.8}
           className={compact
-            ? 'flex-row items-center justify-between bg-surface rounded-lg px-4 py-2.5 mb-5'
-            : 'flex-row items-center justify-between bg-surface rounded-lg p-4 mb-8'}
+            ? 'mb-5 flex-row items-center justify-between rounded-xl border border-border bg-surface px-4 py-3'
+            : 'mb-8 flex-row items-center justify-between rounded-xl border border-border bg-surface p-4'}
           onPress={() => setIsFavorite(!isFavorite)}
         >
           <View className="flex-row items-center gap-3">
-            <View
-              className={compact ? 'w-8 h-8 rounded-xl items-center justify-center' : 'w-10 h-10 rounded-xl items-center justify-center'}
-            >
+            <View className={compact ? 'h-8 w-8 items-center justify-center rounded-lg bg-background' : 'h-10 w-10 items-center justify-center rounded-xl bg-background'}>
               <Ionicons
                 name={isFavorite ? 'star' : 'star-outline'}
                 size={compact ? 16 : 20}
@@ -302,12 +317,10 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
               />
             </View>
             <View>
-              <Text className={compact ? 'text-textPrimary font-semibold text-sm' : 'text-textPrimary font-semibold text-base'}>
+              <Text className={compact ? 'text-sm font-semibold text-textPrimary' : 'text-base font-semibold text-textPrimary'}>
                 {t('spaces.form.favoriteToggleTitle')}
               </Text>
-              <Text className="text-textTertiary text-xs">
-                {t('spaces.form.favoriteToggleSubtitle')}
-              </Text>
+              <Text className="text-xs text-textTertiary">{t('spaces.form.favoriteToggleSubtitle')}</Text>
             </View>
           </View>
 
@@ -317,6 +330,90 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
             color={isFavorite ? colors.warning : colors.textTertiary}
           />
         </TouchableOpacity>
+
+        <View className={compact ? 'mb-5' : 'mb-6'}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setIsClassroomPanelOpen((prev) => !prev)}
+            className="mb-3 flex-row items-center justify-between rounded-xl border border-border bg-surface px-3 py-2.5"
+          >
+            <Text className="text-[11px] font-bold uppercase tracking-[0.12em] text-textTertiary">
+              Turma do Google Classroom
+            </Text>
+            <Ionicons
+              name={isClassroomPanelOpen ? 'chevron-up' : 'chevron-down'}
+              size={15}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+
+          {isClassroomPanelOpen && (
+            <>
+              {classroomCoursesLoading ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : classroomCoursesError ? (
+                <View style={{ alignItems: 'center', gap: 8 }}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12, textAlign: 'center', lineHeight: 18 }}>
+                    {classroomCoursesError}
+                  </Text>
+                  {!classroomCoursesError.startsWith('O Google Classroom não está ligado') && (
+                    <Button
+                      title="Tentar carregar turmas novamente"
+                      onPress={() => void loadClassroomCourses()}
+                      variant="outline"
+                      size="sm"
+                    />
+                  )}
+                  {classroomCoursesError.startsWith('O Google Classroom não está ligado') && (
+                    <Button
+                      title="Abrir definições do perfil"
+                      onPress={() => router.push('/(app)/profile')}
+                      variant="outline"
+                      size="sm"
+                    />
+                  )}
+                </View>
+              ) : classroomCourses.length > 0 ? (
+                <View className="rounded-xl border border-border bg-surface p-2">
+                  {googleClassroomCourseId ? (
+                    <TouchableOpacity
+                      onPress={() => setGoogleClassroomCourseId('')}
+                      activeOpacity={0.8}
+                      className="my-1 rounded-lg px-3 py-2"
+                      style={{ backgroundColor: colors.background }}
+                    >
+                      <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Remover turma vinculada</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                  {classroomCourses.map((course) => {
+                    const selected = course.id === googleClassroomCourseId;
+                    return (
+                      <TouchableOpacity
+                        key={course.id}
+                        onPress={() => setGoogleClassroomCourseId(selected ? '' : course.id)}
+                        activeOpacity={0.8}
+                        className="my-1 rounded-lg px-3 py-2.5"
+                        style={{
+                          backgroundColor: selected ? colors.primarySoft : colors.background,
+                          borderWidth: selected ? 1 : 0,
+                          borderColor: selected ? colors.primary : 'transparent',
+                        }}
+                      >
+                        <Text style={{ color: selected ? colors.primary : colors.textPrimary, fontWeight: '600' }}>
+                          {course.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text className="text-center text-xs text-textTertiary">
+                  Não foram encontradas turmas ativas na conta Google ligada ao Classroom.
+                </Text>
+              )}
+            </>
+          )}
+        </View>
 
         {/* Botão Principal */}
         <Button

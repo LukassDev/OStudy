@@ -3,7 +3,6 @@ import { nowIso } from '../ids';
 
 export interface LocalProfile {
   name: string;
-  goal: string | null;
   onboarding_completed: boolean;
   avatar_style: string;
   theme: 'light' | 'dark';
@@ -19,7 +18,7 @@ type ProfileRow = Omit<LocalProfile, 'onboarding_completed' | 'language_set_manu
 export async function getProfile(): Promise<LocalProfile | null> {
   const database = await getDatabase();
   const row = await database.getFirstAsync<ProfileRow>(
-    `SELECT name, goal, onboarding_completed, avatar_style, theme, language, language_set_manually
+    `SELECT name, onboarding_completed, avatar_style, theme, language, language_set_manually
      FROM profile WHERE id = 'local'`,
   );
   return row ? {
@@ -35,13 +34,12 @@ export async function saveProfile(profile: LocalProfile): Promise<void> {
   await database.runAsync(
     `INSERT INTO profile
       (id, name, goal, onboarding_completed, avatar_style, theme, language, language_set_manually, created_at, updated_at)
-     VALUES ('local', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES ('local', ?, NULL, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
-      name = excluded.name, goal = excluded.goal, onboarding_completed = excluded.onboarding_completed,
+      name = excluded.name, goal = NULL, onboarding_completed = excluded.onboarding_completed,
       avatar_style = excluded.avatar_style, theme = excluded.theme, language = excluded.language,
       language_set_manually = excluded.language_set_manually, updated_at = excluded.updated_at`,
     profile.name,
-    profile.goal,
     Number(profile.onboarding_completed),
     profile.avatar_style,
     profile.theme,

@@ -14,6 +14,7 @@ import {
   updateLesson as persistLesson,
   type LocalLesson,
 } from '../db/repositories/study.repo';
+import { syncStudyNotifications } from '../services/studyNotifications';
 
 export interface Lesson extends LocalLesson {
   user_id?: string;
@@ -77,7 +78,7 @@ interface StudyState {
   hydrated: boolean;
   error: string | null;
   load: (force?: boolean, sections?: StudySection[]) => Promise<void>;
-  refreshLoaded: (sections: StudySection[]) => void;
+  refreshLoaded: (sections: StudySection[]) => Promise<void>;
   reset: () => void;
   savePreferences: (changes: Partial<StudyPreferences>) => Promise<void>;
   queuePreferences: (changes: Partial<StudyPreferences>) => void;
@@ -85,6 +86,14 @@ interface StudyState {
   saveLessons: (lessons: Omit<Lesson, 'id' | 'created_at' | 'updated_at'>[]) => Promise<void>;
   updateLesson: (lesson: Lesson) => Promise<void>;
   deleteLesson: (id: string) => Promise<void>;
+}
+
+function syncNotificationsIfReady(get: () => StudyState) {
+  if (!['lessons', 'events', 'preferences'].every((section) => loadedSections.has(section as StudySection))) return;
+  const state = get();
+  void syncStudyNotifications(state.lessons, state.events, state.preferences).catch((error) => {
+    console.error('Could not synchronize study notifications:', error);
+  });
 }
 
 function updateHydration(set: (partial: Partial<StudyState>) => void) {
@@ -119,9 +128,9 @@ export const useStudyStore = create<StudyState>((set, get) => ({
     });
   },
 
-  refreshLoaded: (sections) => {
+  refreshLoaded: async (sections) => {
     const visible = sections.filter((section) => loadedSections.has(section));
-    if (visible.length) void get().load(true, visible);
+    if (visible.length) await get().load(true, visible);
   },
 
   load: async (force = false, sections = allSections) => {
@@ -146,6 +155,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         else set({ grades: value as Grade[] });
       }
       updateHydration(set);
+      syncNotificationsIfReady(get);
     } catch (error) {
       if (epoch === loadEpoch) {
         set({ error: String((error as Error).message || error), loading: false });
@@ -157,6 +167,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   queuePreferences: (changes) => {
     const preferences = { ...get().preferences, ...changes };
     set({ preferences });
+    syncNotificationsIfReady(get);
     clearTimeout(preferenceTimer);
     preferenceTimer = setTimeout(() => { void get().flushPreferences(); }, 250);
   },
@@ -200,6 +211,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
       set({ lessons: updated, lessonSyncError: false });
       loadedSections.add('lessons');
       updateHydration(set);
+      syncNotificationsIfReady(get);
     });
     lessonQueue = save.catch((error) => {
       set({ lessonSyncError: true, error: String((error as Error).message || error) });
@@ -210,11 +222,15 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
   updateLesson: async (lesson) => {
     await persistLesson(lesson);
-    set({ lessons: await listLessons() });
+    const lessons = await listLessons();
+    set({ lessons: lessons });
+    syncNotificationsIfReady(get);
   },
 
   deleteLesson: async (id) => {
     await removeLesson(id);
-    set({ lessons: await listLessons() });
+    const lessons = await listLessons();
+    set({ lessons });
+    syncNotificationsIfReady(get);
   },
 }));

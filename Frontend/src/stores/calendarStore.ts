@@ -5,6 +5,7 @@ import {
   listCalendarEvents,
   updateCalendarEvent as persistCalendarEvent,
 } from '../db/repositories/calendar.repo';
+import { useStudyStore } from './studyStore';
 
 export type EventType = 'exam' | 'assignment' | 'session' | 'other';
 
@@ -52,15 +53,24 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   createEvent: async (data) => {
     await insertCalendarEvent(data);
     await get().fetchEvents(data.space_id);
+    const study = useStudyStore.getState();
+    await study.refreshLoaded(['events']);
+    await useStudyStore.getState().load(false, ['lessons', 'events', 'preferences']);
   },
 
   updateEvent: async (id, spaceId, data) => {
     await persistCalendarEvent(id, spaceId, data);
     await get().fetchEvents(spaceId);
+    const study = useStudyStore.getState();
+    await study.refreshLoaded(['events']);
+    await useStudyStore.getState().load(false, ['lessons', 'events', 'preferences']);
   },
 
   deleteEvent: async (id, spaceId) => {
     await removeCalendarEvent(id, spaceId);
     await get().fetchEvents(spaceId);
+    const study = useStudyStore.getState();
+    await study.refreshLoaded(['events']);
+    await useStudyStore.getState().load(false, ['lessons', 'events', 'preferences']);
   },
 }));

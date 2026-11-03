@@ -1,4 +1,4 @@
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 
 export const INITIAL_SCHEMA = `
 CREATE TABLE IF NOT EXISTS profile (
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS profile (
   goal TEXT,
   onboarding_completed INTEGER NOT NULL DEFAULT 0,
   avatar_style TEXT NOT NULL DEFAULT 'initials',
-  theme TEXT NOT NULL DEFAULT 'light' CHECK (theme IN ('light', 'dark')),
+  theme TEXT NOT NULL DEFAULT 'dark' CHECK (theme IN ('light', 'dark')),
   language TEXT NOT NULL,
   language_set_manually INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS spaces (
   name TEXT NOT NULL,
   icon TEXT NOT NULL DEFAULT 'folder-outline',
   color TEXT NOT NULL DEFAULT 'blue',
+  google_classroom_course_id TEXT,
   is_favorite INTEGER NOT NULL DEFAULT 0,
   position INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
@@ -102,6 +103,11 @@ CREATE TABLE IF NOT EXISTS calendar_events (
   updated_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS calendar_events_space_date_idx ON calendar_events(space_id, event_date, id);
+
+CREATE TABLE IF NOT EXISTS classroom_ignored_events (
+  event_id TEXT PRIMARY KEY NOT NULL,
+  created_at TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS grades (
   id TEXT PRIMARY KEY NOT NULL,

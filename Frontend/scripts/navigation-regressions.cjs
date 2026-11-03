@@ -12,6 +12,8 @@ function loadTs(file) {
   return mod.exports;
 }
 const { getSwipedTab, isHorizontalSwipe, SPACE_TAB_ORDER } = loadTs('src/utils/swipeNavigation.ts');
+assert.deepEqual(SPACE_TAB_ORDER, ['avaliacoes', 'calendario', 'classroom', 'conteudo', 'recursos', 'chats']);
+assert.ok(!SPACE_TAB_ORDER.includes('plano'), 'The removed plan tab must not be navigable');
 assert.equal(isHorizontalSwipe(80, 5), true);
 assert.equal(isHorizontalSwipe(-80, 5), true);
 assert.equal(isHorizontalSwipe(10, 80), false, 'Vertical scrolling must not switch tabs');
@@ -19,7 +21,7 @@ assert.equal(isHorizontalSwipe(40, 35), false, 'Diagonal scrolling must not clai
 assert.equal(isHorizontalSwipe(8, 2), false, 'Taps must remain taps');
 assert.equal(isHorizontalSwipe(80, 5, 2), false, 'Multi-touch must not navigate');
 for (const [index, tab] of SPACE_TAB_ORDER.entries()) {
-  assert.equal(getSwipedTab(tab, -80), SPACE_TAB_ORDER[Math.min(5, index + 1)]);
+  assert.equal(getSwipedTab(tab, -80), SPACE_TAB_ORDER[Math.min(SPACE_TAB_ORDER.length - 1, index + 1)]);
   assert.equal(getSwipedTab(tab, 80), SPACE_TAB_ORDER[Math.max(0, index - 1)]);
   assert.equal(getSwipedTab(tab, 20), tab, 'Short drags must not navigate');
 }

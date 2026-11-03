@@ -1,73 +1,37 @@
 import i18n from '../../i18n';
 import { getDatabase } from '../../db/client';
 import { createId, nowIso } from '../../db/ids';
-import { getChat, listChats, listMessages, saveMessage, type StoredQuiz } from '../../db/repositories/chats.repo';
+import { getChat, listMessages, saveMessage, type StoredQuiz } from '../../db/repositories/chats.repo';
 import { createCalendarEvent, deleteCalendarEvent, listCalendarEvents } from '../../db/repositories/calendar.repo';
-import { createContentTopic, deleteContentTopic, listContentTopics, toggleContentTopicReviewed, updateContentTopic } from '../../db/repositories/content.repo';
+import { createContentTopic, deleteContentTopic, listContentTopics, updateContentTopic } from '../../db/repositories/content.repo';
 import { createGrade, deleteGrade, listGrades } from '../../db/repositories/grades.repo';
 import { getSetting } from '../../db/repositories/settings.repo';
 import { DEFAULT_TEXT_MODEL, DEFAULT_TUTOR_PROMPT, DEFAULT_VISION_MODEL, normalizeEditableTutorPrompt, TUTOR_FIXED_SYSTEM_PROMPT } from '../ai/config';
 import { completeText, completeWithAttachments, type AiTurn } from '../ai/openrouter';
 import { getApiKey } from '../ai/keyStore';
 import { getAppLimits } from '../appLimits';
-import { extractAndSaveMemory, readRelevantMemories, rememberExplicitFact } from '../memory/memory';
-import { readStudentModel, rememberExplicitStudyGoal } from '../studentModel/studentModel';
 import { parseTutorReply, type ParsedTutorAction } from './actionParser';
-import { useContentStore } from '../../stores/contentStore';
-import { usePlanStore } from '../../stores/planStore';
+import { useStudyStore } from '../../stores/studyStore';
+
+export type TutorResponseMode = 'flash' | 'deep';
 
 type LocalContext = {
   spaceName: string;
   topics: Awaited<ReturnType<typeof listContentTopics>>;
   events: Awaited<ReturnType<typeof listCalendarEvents>>;
   grades: Awaited<ReturnType<typeof listGrades>>;
-  topicKnowledge: { title: string; knowledge: number }[];
-  goal: string | null;
-  memories: Awaited<ReturnType<typeof readRelevantMemories>>;
-  otherChats: string;
 };
 
-async function readContext(spaceId: string, currentChatId: string, message: string): Promise<LocalContext> {
+async function readContext(spaceId: string): Promise<LocalContext> {
   const database = await getDatabase();
-  const [space, topics, events, grades, studentModel, memories, topicKnowledge, recentChats] = await Promise.all([
+  const [space, topics, events, grades] = await Promise.all([
     database.getFirstAsync<{ name: string }>('SELECT name FROM spaces WHERE id = ?', spaceId),
     listContentTopics(spaceId),
     listCalendarEvents(spaceId),
     listGrades(spaceId),
-    readStudentModel(spaceId),
-    readRelevantMemories(spaceId),
-    database.getAllAsync<{ title: string; knowledge: number }>(
-      `SELECT topics.title, knowledge.knowledge FROM topic_knowledge AS knowledge
-       JOIN content_topics AS topics ON topics.id = knowledge.topic_id
-       WHERE topics.space_id = ? ORDER BY knowledge.knowledge ASC LIMIT 5`,
-      spaceId,
-    ),
-    listChats(spaceId, 7),
   ]);
   if (!space) throw new Error(i18n.t('chat.errors.spaceNotFound'));
-  const otherChatsList = recentChats.filter(chat => chat.id !== currentChatId).slice(0, 6);
-  const lowerMessage = message.toLocaleLowerCase();
-  const referenceHints = [
-    'tínhamos ficado', 'tinhamos ficado', 'onde ficámos', 'onde ficamos', 'outro chat',
-    'conversa anterior', 'estávamos a falar', 'estavamos a falar', 'lembras-te', 'lembras te',
-    'where did we leave off', 'previous chat', 'other conversation', 'what did we discuss',
-    'dónde nos quedamos', 'conversation précédente', 'vorherigen chat', 'conversazione precedente',
-  ];
-  const referencesPast = referenceHints.some(hint => lowerMessage.includes(hint))
-    || otherChatsList.some(chat => chat.title && lowerMessage.includes(chat.title.toLocaleLowerCase()));
-  const otherChats = await Promise.all(otherChatsList.map(async chat => {
-    const heading = `- "${chat.title || 'Sem título'}" — ${chat.last_message_preview || '(vazio)'}`;
-    if (!referencesPast) return heading;
-    const history = (await listMessages(chat.id)).slice(-6);
-    const conversation = history.map(item =>
-      `${item.role === 'tutor' ? 'Oren' : 'Aluno'}: ${item.content.slice(0, 1800)}`,
-    ).join('\n');
-    return `-- ${chat.title || 'Sem título'} --\n${conversation || heading}`;
-  }));
-  return {
-    spaceName: space.name, topics, events, grades, topicKnowledge,
-    goal: studentModel?.goal ?? null, memories, otherChats: otherChats.join('\n'),
-  };
+  return { spaceName: space.name, topics, events, grades };
 }
 
 function formatContext(context: LocalContext, maxChars: number): string {
@@ -82,19 +46,11 @@ function formatContext(context: LocalContext, maxChars: number): string {
   const eventText = upcomingEvents.map(item =>
     `- ${item.title} (${item.type}, ${item.event_date}) [id:${item.id}]`,
   ).join('\n');
-  const knowledgeText = context.topicKnowledge.map(item =>
-    `- ${item.title}: ${Math.round(item.knowledge)}%`,
-  ).join('\n');
-  const memoryText = context.memories.map(memory => `- ${memory.content}`).join('\n');
   const formatted = [
     `Space: ${context.spaceName}`,
-    `Study goal: ${context.goal || '(not set)'}`,
     `Topics:\n${topics || '(none)'}`,
-    `Topic knowledge and review priorities:\n${knowledgeText || '(none recorded)'}`,
     `Upcoming events:\n${eventText || '(none)'}`,
     `Grades:\n${grades || '(none)'}`,
-    `Other conversations in this Space:\n${context.otherChats || '(none)'}`,
-    `Remembered study preferences and facts:\n${memoryText || '(none)'}`,
   ].join('\n\n');
   if (formatted.length <= maxChars) return formatted;
   const notice = '\n\n[Context truncated for length. Omitted records may exist; do not claim the lists are complete.]';
@@ -187,6 +143,8 @@ async function executeAction(spaceId: string, action: ParsedTutorAction): Promis
           : ['exam', 'assignment', 'session'].includes(requestedType) ? requestedType : 'other';
         await createCalendarEvent({ space_id: spaceId, title: item.title, event_date: item.event_date, type: type as 'exam' | 'assignment' | 'session' | 'other' });
       }
+      await useStudyStore.getState().refreshLoaded(['events']);
+      await useStudyStore.getState().load(false, ['lessons', 'events', 'preferences']);
       return;
     case 'create_grade':
       for (const item of items) {
@@ -202,22 +160,6 @@ async function executeAction(spaceId: string, action: ParsedTutorAction): Promis
     case 'create_content_topic':
       for (const item of items) await createTopicTree(spaceId, item, typeof item.parent_id === 'string' ? item.parent_id : null);
       return;
-    case 'create_learning_plan': {
-      if (typeof action.data.goal === 'string' && action.data.goal.trim()) {
-        const db = await getDatabase();
-        await db.runAsync(
-          `INSERT INTO student_model (space_id, goal, model_json, created_at, updated_at)
-           VALUES (?, ?, '{}', ?, ?) ON CONFLICT(space_id) DO UPDATE SET goal = excluded.goal, updated_at = excluded.updated_at`,
-          spaceId, action.data.goal.trim(), nowIso(), nowIso(),
-        );
-      }
-      const modules = Array.isArray(action.data.modules) ? action.data.modules : [];
-      for (const module of modules) {
-        if (module && typeof module === 'object') await createTopicTree(spaceId, module as Record<string, unknown>);
-      }
-      if (modules.length === 0) throw new Error('Plano de estudo sem módulos.');
-      return;
-    }
     case 'delete_calendar_event':
     case 'delete_grade':
     case 'delete_content_topic': {
@@ -228,20 +170,12 @@ async function executeAction(spaceId: string, action: ParsedTutorAction): Promis
         else if (action.type === 'delete_grade') await deleteGrade(id, spaceId);
         else await deleteContentTopic(id, spaceId);
       }
+      if (action.type === 'delete_calendar_event') {
+        await useStudyStore.getState().refreshLoaded(['events']);
+        await useStudyStore.getState().load(false, ['lessons', 'events', 'preferences']);
+      }
       return;
     }
-    case 'toggle_module_reviewed':
-      if (typeof action.data.id !== 'string' || !action.data.id) throw new Error('A ação de revisão não contém um tópico válido.');
-      await toggleContentTopicReviewed(action.data.id, spaceId);
-      await Promise.all([
-        useContentStore.getState().loadedSpaceId === spaceId
-          ? useContentStore.getState().fetchTopics(spaceId)
-          : Promise.resolve(),
-        usePlanStore.getState().loadedSpaceId === spaceId
-          ? usePlanStore.getState().fetchPlan(spaceId)
-          : Promise.resolve(),
-      ]);
-      return;
     case 'update_content_topic': {
       const topics = await listContentTopics(spaceId);
       validateTopicMoves(topics, items);
@@ -307,6 +241,7 @@ export async function tutorReply(input: {
   content: string;
   images: { mimeType: string; base64: string }[];
   documents: { mimeType: string; name: string; base64: string }[];
+  mode?: TutorResponseMode;
   signal: AbortSignal;
 }): Promise<{ reply: string; quiz: ReturnType<typeof parseTutorReply>['quiz'] }> {
   const chat = await getChat(input.chatId);
@@ -329,11 +264,9 @@ export async function tutorReply(input: {
   const priorMessages = await listMessages(input.chatId);
   const previousAssistant = [...priorMessages.slice(0, -1)].reverse().find(message => message.role === 'tutor')?.content ?? '';
 
-  await rememberExplicitStudyGoal(chat.space_id, input.content);
-  if (/\bremember\b|lembra(?:-te)?|guarda esta informa(?:ç|c)[aã]o/i.test(input.content)) {
-    await rememberExplicitFact(chat.space_id, input.content);
-  }
-  const context = await readContext(chat.space_id, chat.id, input.content);
+  const context = await readContext(chat.space_id);
+  const configuredPrompt = await getSetting('ai.systemPrompt', DEFAULT_TUTOR_PROMPT);
+  const behaviorPrompt = normalizeEditableTutorPrompt(configuredPrompt).trim() || DEFAULT_TUTOR_PROMPT;
   const pdfs = input.documents.filter(document => document.mimeType.toLowerCase() === 'application/pdf'
     || document.name.toLowerCase().endsWith('.pdf'));
   const textDocuments = input.documents.filter(document => !pdfs.includes(document));
@@ -350,9 +283,10 @@ export async function tutorReply(input: {
       return `Documento "${document.name}" anexado; o texto não pôde ser extraído localmente.`;
     }
   }).join('\n\n');
-  const configuredPrompt = await getSetting('ai.systemPrompt', DEFAULT_TUTOR_PROMPT);
-  const behaviorPrompt = normalizeEditableTutorPrompt(configuredPrompt).trim() || DEFAULT_TUTOR_PROMPT;
-  const systemPrompt = `${TUTOR_FIXED_SYSTEM_PROMPT}\n\n[Editable Tutor Behavior]\n${behaviorPrompt}\n\n[Local study context]\n${formatContext(context, limits.tutorContextChars)}${documentContext ? `\n\n[Attached documents]\n${documentContext}` : ''}`;
+  const responseModePrompt = input.mode === 'deep'
+    ? '\n\n[Response depth: Deep]\nExplain the key steps and relevant assumptions clearly. Explore the important parts of the question without unnecessary filler, and do not reveal private chain-of-thought.'
+    : '\n\n[Response depth: Flash]\nAnswer directly and concisely. Include only the explanation needed to make the answer useful and clear.';
+  const systemPrompt = `${TUTOR_FIXED_SYSTEM_PROMPT}\n\n[Editable Tutor Behavior]\n${behaviorPrompt}${responseModePrompt}\n\n[Local study context]\n${formatContext(context, limits.tutorContextChars)}${documentContext ? `\n\n[Attached documents]\n${documentContext}` : ''}`;
   const history: AiTurn[] = priorMessages
     .slice(-limits.tutorHistoryMessages)
     .map(message => {
@@ -363,9 +297,15 @@ export async function tutorReply(input: {
       };
     });
   const textModel = await getSetting('ai.textModel', DEFAULT_TEXT_MODEL);
-  const visionModel = await getSetting('ai.visionModel', DEFAULT_VISION_MODEL);
-  const raw = input.images.length || pdfs.length
-    ? await completeWithAttachments(input.images.length ? visionModel : textModel, systemPrompt, history, {
+  const hasVisionAttachments = input.images.length > 0 || pdfs.length > 0;
+  const visionModel = hasVisionAttachments
+    ? (await getSetting('ai.visionModel', DEFAULT_VISION_MODEL)).trim()
+    : '';
+  if (hasVisionAttachments && !visionModel) {
+    throw new Error(i18n.t('chat.attachMenu.visionModelRequiredMessage'));
+  }
+  const raw = hasVisionAttachments
+    ? await completeWithAttachments(visionModel, systemPrompt, history, {
       images: input.images,
       pdfs: pdfs.map(document => ({ name: document.name, base64: document.base64 })),
     }, input.signal)
@@ -393,11 +333,25 @@ export async function tutorReply(input: {
   return { reply, quiz: parsed.quiz };
 }
 
+export async function generateChatTitle(content: string): Promise<string> {
+  const textModel = await getSetting('ai.textModel', DEFAULT_TEXT_MODEL);
+  const raw = await completeText(
+    textModel,
+    'Create a concise title for this study conversation in the same language as the message. Return only the title, with no quotation marks or explanation.',
+    [{ role: 'user', content: content.slice(0, 4000) }],
+  );
+  const title = raw
+    .split(/\r?\n/, 1)[0]
+    .replace(/^(?:title|título)\s*:\s*/i, '')
+    .replace(/^["'“”]+|["'“”]+$/g, '')
+    .trim()
+    .slice(0, 80);
+  if (!title) throw new Error('O modelo devolveu um título de conversa vazio.');
+  return title;
+}
+
 export async function saveTutorReply(chatId: string, reply: string, quiz: ReturnType<typeof parseTutorReply>['quiz']): Promise<string> {
   const id = createId();
   await saveMessage({ id, chat_id: chatId, role: 'tutor', content: reply, quiz, created_at: nowIso() });
-  void getChat(chatId)
-    .then(chat => chat ? extractAndSaveMemory(chatId, chat.space_id) : undefined)
-    .catch(error => console.error('Could not load local chat for memory extraction:', error));
   return id;
 }

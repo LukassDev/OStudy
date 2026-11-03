@@ -51,7 +51,7 @@ const useDialogStore = create<DialogState>((set) => ({
 /**
  * Substituto visual de Alert.alert. Mantém a assinatura familiar para que os
  * fluxos continuem simples, mas apresenta um modal coerente com o design do
- * Oren em todas as plataformas.
+ * OStudy em todas as plataformas.
  */
 export function showAppDialog(
   title: string,

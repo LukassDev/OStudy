@@ -9,7 +9,7 @@
 //       escolha manual do utilizador > idioma detetado do telemóvel > fallback inglês
 //
 // IMPORTANTE: este ficheiro controla apenas o idioma da INTERFACE (UI).
-// O idioma em que o Oren (IA) responde no chat é decidido dinamicamente
+// O idioma em que a IA responde no chat é decidido dinamicamente
 // pelo backend, com base no que o próprio aluno escreve (ver
 // back/src/services/tutor/promptBuilder.service.ts — "Chameleon Rule").
 // Este módulo não tem, e não deve ter, qualquer influência sobre isso.

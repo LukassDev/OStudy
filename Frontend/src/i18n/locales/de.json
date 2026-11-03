@@ -17,53 +17,46 @@
     "preparingStudySpace": "Dein Lernbereich wird vorbereitet..."
   },
   "onboarding": {
-    "step1": {
-      "title": "Willkommen bei OStudy.",
-      "subtitle": "Bring dein Lernen auf ein neues Niveau."
-    },
-    "step2": {
-      "title": "Lerne Oren kennen, deinen intelligenten Tutor",
-      "text": "Oren verfolgt deinen Fortschritt, erstellt maßgeschneiderte Lernpläne und hilft dir, den Stoff zu verstehen – jederzeit, in jedem Space."
-    },
-    "step3": {
-      "title": "Wie heißt du?",
-      "subtitle": "Dein Name hilft uns, dein Lernerlebnis zu personalisieren.",
-      "namePlaceholder": "Max Mustermann",
-      "languageLabel": "App-Sprache",
-      "languageHint": "Du kannst das jederzeit in deinem Profil ändern."
-    },
-    "step4": {
-      "title": "Was ist dein Ziel?",
-      "subtitle": "So kann sich der Tutor an dich anpassen.",
-      "goals": {
-        "improveGrades": "Noten verbessern",
-        "prepareExams": "Prüfungen vorbereiten",
-        "learnSomethingNew": "Etwas Neues lernen",
-        "organizeStudies": "Lernen organisieren",
-        "other": "Anderes"
-      },
-      "customGoalPlaceholder": "Z. B.: Programmieren lernen"
-    },
-    "step5": {
-      "title": "Wähle deinen Avatar",
-      "subtitle": "Du kannst ihn jederzeit im Profil ändern.",
-      "initials": "Initialen"
-    },
-    "step6": {
-      "title": "Heller oder dunkler Modus?",
-      "subtitle": "Du kannst jederzeit im Profil wechseln.",
-      "light": "Hell",
-      "dark": "Dunkel",
-      "spaceHint": "Du kannst deinen ersten Lernbereich im Dashboard erstellen."
-    },
-    "nextLabel": "Weiter",
-    "startLabel": "Mit dem Lernen beginnen",
+    "title": "Profil einrichten",
+    "defaultName": "Benutzer",
+    "nameLabel": "Name",
+    "avatarLabel": "Avatar auswählen",
+    "languageLabel": "App-Sprache",
+    "themeLabel": "Darstellung",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "startLabel": "Loslegen",
     "errors": {
-      "nameRequired": "Sag uns deinen Namen.",
-      "goalRequired": "Wähle ein Ziel.",
-      "customGoalRequired": "Schreibe dein Ziel auf.",
+      "nameRequired": "Gib deinen Namen ein.",
       "saveFailed": "Fehler beim Speichern des Profils. Bitte versuche es erneut."
     }
+  },
+  "welcome": {
+    "messages": {
+      "dawn": [
+        "Ein neuer Anfang. Bereit zum Lernen?",
+        "Die Ruhe des Morgens hilft beim Konzentrieren.",
+        "Ein neuer Tag, eine neue Idee."
+      ],
+      "morning": [
+        "Guten Morgen! Auf einen Tag voller neuer Erkenntnisse.",
+        "Guten Morgen! Schritt für Schritt.",
+        "Lust auf einen guten Gedanken zum Start?"
+      ],
+      "afternoon": [
+        "Guten Tag! Du bist auf einem guten Weg.",
+        "Jeder kleine Schritt bringt dich weiter.",
+        "Es ist noch Zeit, etwas Neues zu lernen."
+      ],
+      "night": [
+        "Guten Abend! Beenden wir den Tag mit klarem Fokus.",
+        "Noch ein wenig lernen, ganz in deinem Tempo.",
+        "Schön, dass du da bist. Legen wir los?"
+      ]
+    },
+    "fallback": "Hallo! Schön, dass du da bist.",
+    "loadError": "Die Begrüßungseinstellung konnte nicht geladen werden.",
+    "retry": "Erneut versuchen"
   },
   "dashboard": {
     "greetings": {
@@ -102,26 +95,19 @@
       "spaceCount_other": "Du hast {{count}} Spaces organisiert. Hast du daran gedacht, die älteren Themen zu wiederholen?"
     },
     "defaultStudentName": "Schüler:in",
-    "orenSays": "Oren sagt: ",
     "stats": {
-      "spaces": "Spaces",
-      "chats": "Chats"
+      "spaces": "Spaces"
     },
-    "searchPlaceholder": "Fächer oder Chats suchen...",
+    "searchPlaceholder": "Spaces suchen...",
     "sections": {
       "yourSpaces": "Deine Spaces",
       "createNew": "+ Neu erstellen",
-      "recentChats": "Letzte Unterhaltungen",
       "continueStudying": "Weiter lernen"
     },
     "emptySpaces": {
       "title": "Erstelle deinen ersten Space",
       "subtitle": "Ein Space organisiert Notizen, Aufgaben und Chats zu einem Fach.",
       "action": "Space erstellen"
-    },
-    "emptyChats": {
-      "title": "Noch keine aktuellen Chats",
-      "subtitle": "Sobald du mit Oren zu lernen beginnst, erscheinen deine Chats hier."
     },
     "spaceSubLabel_one": "{{count}} Unter-Space",
     "spaceSubLabel_other": "{{count}} Unter-Spaces",
@@ -142,7 +128,6 @@
       "privacySettings": "Datenschutz und Einstellungen"
     },
     "namePlaceholder": "Dein Name",
-    "goalPlaceholder": "Z. B.: Eine 1 in Mathe bekommen",
     "saveChanges": "Änderungen speichern",
     "theme": {
       "light": "Hell",
@@ -150,9 +135,15 @@
     },
     "language": {
       "rowLabel": "App-Sprache",
-      "hint": "Dies ändert nur die Oberfläche der App. Oren antwortet immer in der Sprache, in der du ihm schreibst."
+      "hint": "Dies ändert nur die Oberfläche der App. OStudy antwortet immer in der Sprache, in der du ihm schreibst."
     },
     "appSettings": {
+      "welcome": {
+        "title": "Begrüßungsbildschirm",
+        "description": "Zeigt beim Öffnen der App vor dem Fortfahren eine Begrüßung.",
+        "enabled": "Beim Öffnen anzeigen",
+        "disabled": "Beim Öffnen ausblenden"
+      },
       "ai": {
         "title": "KI-Einstellungen",
         "keyHint": "Dein Schlüssel wird sicher auf diesem Gerät gespeichert.",
@@ -173,7 +164,7 @@
       },
       "limits": {
         "title": "Tutor-Limits",
-        "description": "Lege Limits für Tutor, Anhänge, Ressourcen, Quizze und Vorschauen fest.",
+        "description": "Lege Limits für den Tutor und Space-Ressourcen fest.",
         "hint": "Verwende ganze Zahlen; Änderungen gelten für zukünftige Anfragen.",
         "save": "Limits speichern",
         "restore": "Standard-Limits wiederherstellen",
@@ -284,7 +275,9 @@
         "interval": "Intervall konnte nicht gespeichert werden",
         "backup": "Sicherung konnte nicht gespeichert werden",
         "import": "Import fehlgeschlagen",
-        "delete": "Daten konnten nicht gelöscht werden"
+        "delete": "Daten konnten nicht gelöscht werden",
+        "loadWelcome": "Die Begrüßungseinstellung konnte nicht geladen werden",
+        "saveWelcome": "Die Begrüßungseinstellung konnte nicht gespeichert werden"
       }
     }
   },
@@ -475,10 +468,10 @@
     },
     "attachedImageFallback": "📎 Angehängtes Bild",
     "analyzedImageLabel": "Analysiertes Bild",
-    "orenName": "Oren",
+    "assistantName": "OStudy",
     "scrollToLatest": "Zur letzten Nachricht",
     "emptyState": {
-      "title": "Hallo! Ich bin Oren",
+      "title": "Hallo! Ich bin OStudy",
       "subtitle": "Dein persönlicher KI-Tutor. Was möchtest du heute üben, wiederholen oder lösen?"
     },
     "errors": {
@@ -489,7 +482,7 @@
       "noActiveSession": "Keine aktive Sitzung. Bitte melde dich erneut an.",
       "spaceNotFound": "Space-ID für diesen Chat nicht gefunden.",
       "sessionExpired": "Sitzung abgelaufen. Bitte melde dich erneut an.",
-      "maintenanceMode": "Oren befindet sich gerade in Wartung. Bitte versuche es später erneut.",
+      "maintenanceMode": "OStudy befindet sich gerade in Wartung. Bitte versuche es später erneut.",
       "communicationError": "Fehler bei der Kommunikation mit dem Tutor.",
       "unsupportedVideoTitle": "Video nicht unterstützt",
       "unsupportedVideoMessage": "Im Chat sind Bilder und Dokumente, aber keine Videos möglich."
@@ -504,9 +497,10 @@
       "loadingTitle": "Bild wird geladen...",
       "loadingSubtitle": "Nur einen Moment",
       "attachedTitle": "Aufgabenbild angehängt",
-      "attachedSubtitle": "Bereit, von Oren analysiert zu werden"
+      "attachedSubtitle": "Bereit, von OStudy analysiert zu werden"
     },
     "inputPlaceholder": "Bitte um eine Erklärung, stelle eine Frage...",
+    "aiDisclaimer": "KI kann Fehler machen.",
     "mode": {
       "flash": "Flash",
       "deep": "Deep"
@@ -528,14 +522,15 @@
       "docTooBigTitle": "Datei zu groß",
       "docTooBigMessage": "Das Dokument darf {{limit}} MiB nicht überschreiten.",
       "imageTooBigTitle": "Bild zu groß",
-      "imageTooBigMessage": "Dieses Bild ist auch nach der Komprimierung größer als {{limit}} MiB. Wähle ein kleineres Bild aus oder nimm eines auf."
+      "imageTooBigMessage": "Dieses Bild ist auch nach der Komprimierung größer als {{limit}} MiB. Wähle ein kleineres Bild aus oder nimm eines auf.",
+      "visionModelRequiredTitle": "Bildmodell erforderlich",
+      "visionModelRequiredMessage": "Lege unter Profil > App-Einstellungen > KI eine Bildmodell-ID fest und speichere sie, bevor du Bilder oder Dokumente anhängst."
     },
     "optionsModal": {
       "title": "Optionen der Unterhaltung",
       "nameLabel": "Name der Unterhaltung",
       "namePlaceholder": "Z. B.: Geschichtszusammenfassung",
       "saveNameButton": "Namen speichern",
-      "bubbleColorLabel": "Farbe deiner Nachrichten",
       "deleteButton": "Unterhaltung löschen"
     },
     "typingPhases": [
@@ -583,7 +578,6 @@
     "searchPlaceholder": "Spaces suchen...",
     "sections": {
       "favorites": "Favoriten",
-      "recentChats": "Letzte Chats",
       "spaces": "Spaces"
     },
     "noResults": "Keine Ergebnisse",
@@ -637,14 +631,13 @@
     "modulesTitle": "Module des Plans",
     "empty": {
       "title": "Du hast noch keinen Plan für diesen Space",
-      "subtitle": "Sprich im Chat mit Oren und bitte ihn zum Beispiel: \"erstelle mir einen Lernplan für dieses Fach\". Die Module erscheinen hier automatisch, während ihr euch unterhaltet.",
-      "action": "Chat mit Oren starten"
+      "subtitle": "Sprich im Chat mit OStudy und bitte ihn zum Beispiel: \"erstelle mir einen Lernplan für dieses Fach\". Die Module erscheinen hier automatisch, während ihr euch unterhaltet.",
+      "action": "Chat mit OStudy starten"
     }
   },
   "spaces": {
     "tabs": {
-      "chats": "Oren",
-      "plan": "Plan",
+      "chats": "Chat",
       "content": "Inhalt",
       "calendar": "Kalender",
       "grades": "Noten",
@@ -728,6 +721,9 @@
     "dragSpacesHint": "Halte einen Space gedrückt, um ihn zu verschieben. Scrolle wie gewohnt zu den anderen. Tippe zum Speichern auf Fertig.",
     "upcomingEvents": "Anstehende Termine",
     "noUpcomingEvents": "Keine anstehenden Termine.",
+    "todayLabel": "Heute",
+    "tomorrowLabel": "Morgen",
+    "noUpcomingLessons": "Keine kommenden Kurse.",
     "globalAverage": "Gesamtnotendurchschnitt",
     "chooseModules": "Wähle Module aus, um deinen Durchschnitt zu sehen.",
     "timetable": "Stundenplan",

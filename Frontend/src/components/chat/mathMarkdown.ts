@@ -74,18 +74,18 @@ function formulaAt(source: string, at: number): Formula | null {
 
 const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 // Code spans/fences retain literal LaTeX. Run before escape handling for \(...\).
-md.inline.ruler.before('escape', 'oren_math', (state, silent) => {
+md.inline.ruler.before('escape', 'ostudy_math', (state, silent) => {
   const match = formulaAt(state.src, state.pos);
   if (!match) return false;
   if (!silent) {
-    const token = state.push('oren_math', '', 0);
+    const token = state.push('ostudy_math', '', 0);
     token.content = match.latex;
     token.meta = { display: match.display };
   }
   state.pos = match.end;
   return true;
 });
-md.block.ruler.before('fence', 'oren_math_block', (state, startLine, endLine, silent) => {
+md.block.ruler.before('fence', 'ostudy_math_block', (state, startLine, endLine, silent) => {
   const start = state.bMarks[startLine] + state.tShift[startLine];
   if (state.sCount[startLine] - state.blkIndent >= 4) return false;
   const match = formulaAt(state.src, start);
@@ -94,12 +94,12 @@ md.block.ruler.before('fence', 'oren_math_block', (state, startLine, endLine, si
   while (last < endLine && state.eMarks[last] < match.end) last++;
   if (last >= endLine || state.src.slice(match.end, state.eMarks[last]).trim()) return false;
   if (silent) return true;
-  const token = state.push('oren_math', '', 0);
+  const token = state.push('ostudy_math', '', 0);
   token.content = match.latex; token.meta = { display: true }; token.block = true;
   token.map = [startLine, last + 1]; state.line = last + 1;
   return true;
 }, { alt: ['paragraph', 'reference', 'blockquote', 'list'] });
-md.renderer.rules.oren_math = (tokens, index) => {
+md.renderer.rules.ostudy_math = (tokens, index) => {
   const token = tokens[index];
   return `<span class="${token.meta.display ? 'math-display' : 'math-inline'}">${renderFormula(token.content, token.meta.display)}</span>`;
 };

@@ -23,6 +23,7 @@ import { ContentTab } from '../../../src/components/content/ContentTab';
 import { CalendarTab } from '../../../src/components/calendar/CalendarTab';
 import { GradesTab } from '../../../src/components/grades/GradesTab';
 import { ResourcesTab } from '../../../src/components/resources/ResourcesTab';
+import { ClassroomTab } from '../../../src/components/classroom/ClassroomTab';
 import { useSpaceColorMap, useThemeColors } from '../../../src/constants/theme';
 
 import {
@@ -33,11 +34,11 @@ import {
 
 function getTabs(t: (key: string) => string): { key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap }[] {
   return [
-    { key: 'chats', label: t('spaces.tabs.chats'), icon: 'chatbubbles-outline' },
-    { key: 'plano', label: t('spaces.tabs.plan'), icon: 'rocket-outline' },
-    { key: 'conteudo', label: t('spaces.tabs.content'), icon: 'book-outline' },
-    { key: 'calendario', label: t('spaces.tabs.calendar'), icon: 'calendar-outline' },
     { key: 'avaliacoes', label: t('spaces.tabs.grades'), icon: 'stats-chart-outline' },
+    { key: 'calendario', label: t('spaces.tabs.calendar'), icon: 'calendar-outline' },
+    { key: 'classroom', label: 'Classroom', icon: 'school-outline' },
+    { key: 'chats', label: t('spaces.tabs.chats'), icon: 'chatbubbles-outline' },
+    { key: 'conteudo', label: t('spaces.tabs.content'), icon: 'book-outline' },
     { key: 'recursos', label: t('spaces.tabs.resources'), icon: 'folder-open-outline' },
   ];
 }
@@ -49,7 +50,7 @@ export default function SpaceScreen() {
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { spaces, fetchSpaces, findSpace, getBreadcrumb } = useSpaceStore();
   const SPACE_COLOR_MAP = useSpaceColorMap();
-  const [activeTab, setActiveTab] = useState<Tab>('chats');
+  const [activeTab, setActiveTab] = useState<Tab>('avaliacoes');
   const tabsScroll = useRef<ScrollView>(null);
   const tabPositions = useRef<Partial<Record<Tab, number>>>({});
   const tabs = getTabs(t);
@@ -62,7 +63,7 @@ export default function SpaceScreen() {
   }, [activeTab]);
 
   useEffect(() => {
-    setActiveTab('chats');
+    setActiveTab('avaliacoes');
   }, [id]);
 
   const swipe = PanResponder.create({
@@ -99,15 +100,6 @@ export default function SpaceScreen() {
             <ChatList spaceId={id} readOnly={false} />
           </SpaceDataGate>
         );
-      case 'plano':
-        return (
-          <View style={styles.emptyTab}>
-            <Text style={[styles.emptyTabTitle, { color: colors.textPrimary }]}>Em breve</Text>
-            <Text style={[styles.emptyTabSubtitle, { color: colors.textSecondary }]}>
-              A funcionalidade de plano ainda não está disponível.
-            </Text>
-          </View>
-        );
       case 'conteudo':
         return (
           <SpaceDataGate spaceId={id} tab="conteudo">
@@ -118,6 +110,12 @@ export default function SpaceScreen() {
         return (
           <SpaceDataGate spaceId={id} tab="calendario">
             <CalendarTab spaceId={id} readOnly={false} />
+          </SpaceDataGate>
+        );
+      case 'classroom':
+        return (
+          <SpaceDataGate spaceId={id} tab="classroom">
+            <ClassroomTab spaceId={id} />
           </SpaceDataGate>
         );
       case 'avaliacoes':
@@ -345,21 +343,5 @@ const styles = StyleSheet.create({
   },
   contentArea: {
     flex: 1,
-  },
-  emptyTab: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  emptyTabTitle: {
-    fontFamily: 'DMSans_700Bold',
-    fontSize: 20,
-    marginBottom: 8,
-  },
-  emptyTabSubtitle: {
-    fontFamily: 'DMSans_500Medium',
-    fontSize: 14,
-    textAlign: 'center',
   },
 });

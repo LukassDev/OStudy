@@ -1,5 +1,6 @@
 import { SpaceGrid } from '../../src/components/dashboard/SpaceGrid';
 import { StudyCards } from '../../src/components/dashboard/StudyCards';
+import { ClassroomFeed } from '../../src/components/dashboard/ClassroomFeed';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -15,19 +16,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { guardedPush } from '../../src/utils/navigation';
-import { formatDistanceToNow } from 'date-fns';
-import type { Locale } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { useSpaceStore } from '../../src/stores/spaceStore';
-import { useChatStore } from '../../src/stores/chatStore';
 import { useUiStore } from '../../src/stores/uiStore';
 import { Avatar } from '../../src/components/ui/Avatar';
 import { EmptyState } from '../../src/components/ui/EmptyState';
-import { getTutorInsight } from '../../src/utils/tutorInsights';
-import { useSpaceColorMap, useThemeColors } from '../../src/constants/theme';
+import { useThemeColors } from '../../src/constants/theme';
 import { getGreeting } from '../../src/utils/greetings';
-import { useDateFnsLocale } from '../../src/i18n/dateFnsLocale';
 import { matchesSearchText } from '../../src/utils/search';
 import { showAppDialog } from '../../src/components/ui/AppDialog';
 
@@ -40,10 +36,7 @@ function countAllSpaces(spaces: ReturnType<typeof useSpaceStore.getState>['space
   return count;
 }
 
-// Métricas simples (spaces, chats): sem card, sem fundo — apenas número +
-// rótulo lado a lado com um traço vertical fino a separar. Isto evita que
-// concorram visualmente com os SpaceCard/ChatCard mais abaixo, que são os
-// elementos realmente "clicáveis e navegáveis" do dashboard.
+// Métricas simples: sem card nem fundo, apenas número e rótulo.
 function MetricStat({
   icon, value, label, colors,
 }: { icon: keyof typeof Ionicons.glyphMap; value: string; label: string; colors: any }) {
@@ -73,54 +66,12 @@ function SectionTitle({
   );
 }
 
-function ChatCard({ chat, spaceColor, colors, dateLocale, defaultSpaceName }: { chat: any; spaceColor: string; colors: any; dateLocale: Locale; defaultSpaceName: string }) {
-  return (
-    <TouchableOpacity
-      style={[styles.chatCard, { backgroundColor: colors.surface }]}
-      onPress={() => guardedPush({
-        pathname: '/(app)/chats/[id]',
-        params: { id: chat.id, ...(chat.matchedMessageId ? { messageId: chat.matchedMessageId } : {}) },
-      })}
-      activeOpacity={0.75}
-    >
-      <View style={[styles.chatAccent, { backgroundColor: spaceColor || colors.primary }]} />
-      <View style={styles.chatBody}>
-        <View style={styles.chatHeader}>
-          <Text style={[styles.chatSpace, { color: spaceColor || colors.primary }]} numberOfLines={1}>
-            {chat.space?.name || defaultSpaceName}
-          </Text>
-          <Text style={[styles.chatTime, { color: colors.textSecondary }]}>
-            {formatDistanceToNow(new Date(chat.updated_at), { locale: dateLocale, addSuffix: true })}
-          </Text>
-        </View>
-        <Text style={[styles.chatTitle, { color: colors.textPrimary }]} numberOfLines={1}>
-          {chat.title}
-        </Text>
-        {chat.last_message_preview ? (
-          <Text style={[styles.chatPreview, { color: colors.textSecondary }]} numberOfLines={1}>
-            {chat.last_message_preview}
-          </Text>
-        ) : null}
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} style={{ marginLeft: 8 }} />
-    </TouchableOpacity>
-  );
-}
-
 export default function Dashboard() {
   const colors = useThemeColors();
   const { t, i18n } = useTranslation();
-  const dateLocale = useDateFnsLocale();
   const { name } = useProfileStore();
   const { spaces, fetchSpaces } = useSpaceStore();
-  const { allChats, recentChats, fetchAllChats, fetchRecentChats, searchChats } = useChatStore();
-  const dashboardScroll = useRef<ScrollView>(null);
-  const chatsSectionY = useRef(0);
-  const SPACE_COLOR_MAP = useSpaceColorMap();
   const [search, setSearch] = useState('');
-  useEffect(() => {
-    void fetchAllChats();
-  }, [fetchAllChats]);
   const [draggingSpace, setDraggingSpace] = useState(false);
   const editingSpaces = useUiStore((state) => state.editingSpaces);
   const [editorSpaces, setEditorSpaces] = useState(spaces);
@@ -141,7 +92,6 @@ export default function Dashboard() {
     if (ids.every((id, i) => id === current[i].id)) return;
     void useSpaceStore.getState().reorderSpaces(ids).catch(error => showAppDialog(t('update15.error'), String(error)));
   };
-  const [searchedChats, setSearchedChats] = useState<typeof recentChats>([]);
 
   // Saudação sorteada uma única vez por montagem do dashboard (não a cada
   // render), para não "saltar" de frase enquanto o utilizador está a ler.
@@ -154,53 +104,18 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchSpaces();
-    fetchRecentChats(5);
-  }, [fetchSpaces, fetchRecentChats]);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!search.trim()) {
-      setSearchedChats([]);
-      return () => { cancelled = true; };
-    }
-
-    const timeout = setTimeout(() => {
-      searchChats(search).then((results) => {
-        if (!cancelled) setSearchedChats(results);
-      });
-    }, 250);
-    return () => { cancelled = true; clearTimeout(timeout); };
-  }, [search, searchChats]);
+  }, [fetchSpaces]);
 
   const filteredSpaces = useMemo(() => {
     if (!search.trim()) return spaces;
     return spaces.filter((s) => matchesSearchText([s.name], search));
   }, [search, spaces]);
 
-  const filteredChats = useMemo(() => {
-    return search.trim() ? searchedChats : recentChats.slice(0, 5);
-  }, [search, recentChats, searchedChats]);
-
-  // Recalcula sempre que o idioma mudar também, para o CTA/mensagem
-  // dinâmicos (que contêm texto traduzido interpolado com dados reais)
-  // acompanharem a troca de idioma sem precisar de reload.
-  const insight = useMemo(() => getTutorInsight(spaces, recentChats, t), [spaces, recentChats, i18n.language]);
   const totalSpaces = countAllSpaces(spaces);
-
-  const handlePressCta = () => {
-    if (insight.cta === 'continue_chat' && insight.targetId) {
-      guardedPush(`/(app)/chats/${insight.targetId}`);
-    } else if (insight.cta === 'new_space') {
-      guardedPush('/(app)/spaces/new');
-    } else if (insight.cta === 'open_space' && insight.targetId) {
-      guardedPush(`/(app)/spaces/${insight.targetId}`);
-    }
-  };
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       <ScrollView
-        ref={dashboardScroll}
         scrollEnabled={!editingSpaces}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -215,21 +130,13 @@ export default function Dashboard() {
             </Text>
           </View>
           <TouchableOpacity onPress={() => guardedPush('/(app)/profile')} activeOpacity={0.85} style={{ marginRight: 4 }}>
-            <Avatar name={name || 'Oren'} size={52} />
+            <Avatar name={name || 'OStudy'} size={52} />
           </TouchableOpacity>
         </View>
 
         {/* Faixa de métricas simples, sem competir com os cards abaixo. */}
         <View style={styles.metricsRow}>
           <MetricStat icon="folder-outline" value={String(totalSpaces)} label={t('dashboard.stats.spaces')} colors={colors} />
-          <View style={[styles.metricDivider, { backgroundColor: colors.border }]} />
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('dashboard.stats.chats')} onPress={() => {
-            setSearch('');
-            requestAnimationFrame(() => dashboardScroll.current?.scrollTo({ y: chatsSectionY.current, animated: true }));
-          }}>
-            <MetricStat icon="chatbubbles-outline" value={String(allChats.length)} label={t('dashboard.stats.chats')} colors={colors} />
-          </TouchableOpacity>
-          <View style={styles.metricSpacer} />
         </View>
 
         <View style={[styles.searchContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
@@ -252,11 +159,7 @@ export default function Dashboard() {
         </View>
 
         <View style={{ marginBottom: 28, gap: 16 }}>
-          <StudyCards
-            message={insight.message}
-            ctaLabel={insight.ctaLabel}
-            onPressCta={handlePressCta}
-          />
+          <StudyCards />
         </View>
 
         <SectionTitle
@@ -293,31 +196,8 @@ export default function Dashboard() {
           <SpaceGrid spaces={filteredSpaces} onDragging={setDraggingSpace} />
         )}
 
-        <View onLayout={event => { chatsSectionY.current = event.nativeEvent.layout.y; }}>
-        <SectionTitle title={t('dashboard.sections.recentChats')} colors={colors} />
-        </View>
-        {filteredChats.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <EmptyState
-              icon="chatbubbles-outline"
-              title={t('dashboard.emptyChats.title')}
-              subtitle={t('dashboard.emptyChats.subtitle')}
-            />
-          </View>
-        ) : (
-          <View style={styles.chatsList}>
-            {filteredChats.map((chat) => (
-              <ChatCard
-                key={chat.id}
-                chat={chat}
-                spaceColor={SPACE_COLOR_MAP[chat.space?.color || 'blue']}
-                colors={colors}
-                dateLocale={dateLocale}
-                defaultSpaceName={t('dashboard.insights.defaultSpaceName')}
-              />
-            ))}
-          </View>
-        )}
+        <ClassroomFeed />
+
       </ScrollView>
       <Modal visible={editingSpaces} animationType="slide" onRequestClose={closeSpaceEditor}>
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -396,15 +276,6 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_500Medium',
     fontSize: 13,
   },
-  metricDivider: {
-    width: 1,
-    height: 28,
-    marginHorizontal: 20,
-  },
-  metricSpacer: {
-    flex: 1,
-  },
-
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -465,49 +336,6 @@ const styles = StyleSheet.create({
   spaceSub: {
     fontFamily: 'DMSans_500Medium',
     fontSize: 12,
-  },
-  chatsList: {
-    gap: 10,
-    marginBottom: 32,
-  },
-  chatCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  chatAccent: {
-    width: 4,
-    height: 36,
-    borderRadius: 2,
-    marginRight: 14,
-  },
-  chatBody: {
-    flex: 1,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  chatSpace: {
-    fontFamily: 'DMSans_700Bold',
-    fontSize: 12,
-  },
-  chatTime: {
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 12,
-  },
-  chatTitle: {
-    fontFamily: 'DMSans_700Bold',
-    fontSize: 15,
-    marginBottom: 2,
-  },
-  chatPreview: {
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 13,
   },
   emptyContainer: {
     marginBottom: 28,

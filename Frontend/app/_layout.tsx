@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { AppState, View, Text, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -24,6 +24,9 @@ import { initI18n, detectDeviceLanguage, resolveAppLanguage } from '../src/i18n'
 import { AppDialogHost } from '../src/components/ui/AppDialog';
 import { useTranslation } from 'react-i18next';
 import { startAutomaticBackupScheduler } from '../src/services/automaticBackup';
+import { startClassroomSessionMaintenance } from '../src/services/classroom/auth';
+import { getSetting } from '../src/db/repositories/settings.repo';
+import WelcomeScreen from './welcome';
 import '../global.css';
 
 // Impede que a tela de splash feche automaticamente antes do carregamento das fontes
@@ -40,7 +43,7 @@ function ThemeSync() {
     if (Platform.OS !== 'android') return;
     const current = useProfileStore.getState().theme;
     NavigationBar.setBackgroundColorAsync(
-      current === 'light' ? '#F8F5F0' : '#141312'
+      current === 'light' ? lightColors.background : darkColors.background
     );
     NavigationBar.setButtonStyleAsync(current === 'light' ? 'dark' : 'light');
   }, []);
@@ -138,6 +141,9 @@ export default function RootLayout() {
   });
 
   const { fetchProfile, theme, loading: profileLoading } = useProfileStore();
+  const [welcomePreferenceLoaded, setWelcomePreferenceLoaded] = useState(Platform.OS === 'web');
+  const [showStartupWelcome, setShowStartupWelcome] = useState(false);
+  const hideStartupWelcome = useCallback(() => setShowStartupWelcome(false), []);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -165,14 +171,36 @@ export default function RootLayout() {
     });
   }, [fetchProfile]);
 
-  useEffect(() => startAutomaticBackupScheduler(), []);
-
-  // Hide the splash after both fonts and local profile data have loaded.
   useEffect(() => {
-    if (fontsLoaded && !profileLoading) {
+    if (Platform.OS === 'web' || profileLoading) return;
+    let active = true;
+    void getSetting('welcome.enabled', true)
+      .then((enabled) => {
+        if (!active) return;
+        setShowStartupWelcome(enabled);
+        setWelcomePreferenceLoaded(true);
+      })
+      .catch((error) => {
+        console.error('Could not load the welcome screen setting:', error);
+        if (active) {
+          setShowStartupWelcome(true);
+          setWelcomePreferenceLoaded(true);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [profileLoading]);
+
+  useEffect(() => startAutomaticBackupScheduler(), []);
+  useEffect(() => startClassroomSessionMaintenance(), []);
+
+  // Keep the native splash visible until the welcome preference is ready.
+  useEffect(() => {
+    if (fontsLoaded && !profileLoading && welcomePreferenceLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, profileLoading]);
+  }, [fontsLoaded, profileLoading, welcomePreferenceLoaded]);
 
   // Se as fontes não carregaram, mantém o app suspenso (o splash continua visível)
   if (!fontsLoaded) {
@@ -195,7 +223,7 @@ export default function RootLayout() {
         `}</style>}
         <LanguageSync />
         <StatusBar style={statusBarStyle} />
-        {profileLoading ? (
+        {profileLoading || !welcomePreferenceLoaded ? (
           <LoadingScreen />
         ) : (
           <Stack
@@ -206,12 +234,18 @@ export default function RootLayout() {
             }}
           >
             <Stack.Screen name="index" />
+            <Stack.Screen name="welcome" />
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="(app)" />
           </Stack>
         )}
 
         <AppDialogHost />
+        {showStartupWelcome && (
+          <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 100, elevation: 100 }}>
+            <WelcomeScreen onComplete={hideStartupWelcome} />
+          </View>
+        )}
       </View>
     </SafeAreaProvider>
   );

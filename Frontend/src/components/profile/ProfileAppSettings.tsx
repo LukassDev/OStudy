@@ -8,6 +8,7 @@ import { showAppDialog } from '../ui/AppDialog';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { useThemeColors } from '../../constants/theme';
 import { getSetting, setSetting } from '../../db/repositories/settings.repo';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { DEFAULT_TEXT_MODEL, DEFAULT_TUTOR_PROMPT, DEFAULT_VISION_MODEL, normalizeEditableTutorPrompt, SUGGESTED_MODEL_ID } from '../../services/ai/config';
 import {
   AUTO_BACKUP_INTERVALS,
@@ -21,14 +22,7 @@ import {
 } from '../../services/automaticBackup';
 import { getApiKey, removeApiKey, setApiKey } from '../../services/ai/keyStore';
 import { testOpenRouterKey } from '../../services/ai/openrouter';
-import {
-  APP_LIMIT_FIELDS,
-  DEFAULT_APP_LIMITS,
-  getAppLimits,
-  parseAppLimitDraft,
-  saveAppLimits,
-  type AppLimits,
-} from '../../services/appLimits';
+import { connectClassroom, disconnectClassroom, getClassroomAccountEmail, getClassroomClientId, hasClassroomConnection, prepareClassroomWebAuth, setClassroomClientId } from '../../services/classroom/auth';
 import { clearLocalDatabase, exportLocalDatabase, pickAndImportLocalDatabase } from '../../services/localDataTransfer';
 import { useChatStore } from '../../stores/chatStore';
 import { useProfileStore } from '../../stores/profileStore';
@@ -57,6 +51,22 @@ function SettingsSection({ title, expanded, onToggle, children }: React.PropsWit
   </View>;
 }
 
+function SettingsDisclosure({ title, expanded, onToggle, children }: React.PropsWithChildren<{
+  title: string;
+  expanded: boolean;
+  onToggle: () => void;
+}>) {
+  const colors = useThemeColors();
+  return <View style={{ borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12 }}>
+    <Pressable onPress={onToggle} accessibilityRole="button" accessibilityState={{ expanded }}
+      style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary }}>{title}</Text>
+      <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color={colors.textSecondary} />
+    </Pressable>
+    {expanded && <View style={{ gap: 8, paddingBottom: 12 }}>{children}</View>}
+  </View>;
+}
+
 function formatBackupTime(timestamp: string, locale: string, todayLabel: string, yesterdayLabel: string): string {
   const date = new Date(timestamp);
   const today = new Date();
@@ -75,6 +85,7 @@ function formatBackupTime(timestamp: string, locale: string, todayLabel: string,
 export function ProfileAppSettings() {
   const colors = useThemeColors();
   const { t, i18n } = useTranslation();
+  const { copied: classroomSha1Copied, copy: copyClassroomSha1 } = useCopyToClipboard();
   const [apiKey, setApiKeyDraft] = useState('');
   const [keyVisible, setKeyVisible] = useState(false);
   const [textModel, setTextModel] = useState<string>(DEFAULT_TEXT_MODEL);
@@ -82,9 +93,6 @@ export function ProfileAppSettings() {
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_TUTOR_PROMPT);
   const [busy, setBusy] = useState(false);
   const [aiExpanded, setAiExpanded] = useState(false);
-  const [limitDraft, setLimitDraft] = useState<Record<keyof AppLimits, string>>(() =>
-    Object.fromEntries(Object.entries(DEFAULT_APP_LIMITS).map(([key, value]) => [key, String(value)])) as Record<keyof AppLimits, string>,
-  );
   const [dataExpanded, setDataExpanded] = useState(false);
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(false);
   const [autoBackupInterval, setAutoBackupInterval] = useState<AutoBackupIntervalHours>(24);
@@ -92,7 +100,19 @@ export function ProfileAppSettings() {
   const [autoBackupError, setAutoBackupError] = useState('');
   const [autoBackupFolderName, setAutoBackupFolderName] = useState<string | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
+  const [classroomClientId, setClassroomClientIdDraft] = useState('');
+  const [classroomExpanded, setClassroomExpanded] = useState(false);
+  const [classroomWebGuideExpanded, setClassroomWebGuideExpanded] = useState(false);
+  const [classroomAndroidGuideExpanded, setClassroomAndroidGuideExpanded] = useState(false);
+  const [classroomConnected, setClassroomConnected] = useState(false);
+  const [classroomAccountEmail, setClassroomAccountEmail] = useState<string | null>(null);
+  const [classroomExpired, setClassroomExpired] = useState(false);
+  const [classroomAuthReady, setClassroomAuthReady] = useState(Platform.OS !== 'web');
+  const [classroomError, setClassroomError] = useState('');
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
+  const [welcomeEnabled, setWelcomeEnabled] = useState(true);
+  const [welcomeBusy, setWelcomeBusy] = useState(true);
+  const [welcomeExpanded, setWelcomeExpanded] = useState(false);
   const supportsWebBackups = Platform.OS !== 'web'
     || (typeof window !== 'undefined' && typeof window.showDirectoryPicker === 'function' && typeof indexedDB !== 'undefined');
 
@@ -112,15 +132,55 @@ export function ProfileAppSettings() {
       getSetting('ai.textModel', DEFAULT_TEXT_MODEL),
       getSetting('ai.visionModel', DEFAULT_VISION_MODEL),
       getSetting('ai.systemPrompt', DEFAULT_TUTOR_PROMPT),
-      getAppLimits(),
-    ]).then(([key, text, vision, prompt, limits]) => {
+      getClassroomClientId(),
+      hasClassroomConnection(),
+      getClassroomAccountEmail(),
+    ]).then(([key, text, vision, prompt, classroomId, connected, accountEmail]) => {
       if (!active) return;
       setApiKeyDraft(key || '');
       setTextModel(text);
       setVisionModel(vision);
       setSystemPrompt(normalizeEditableTutorPrompt(prompt) || DEFAULT_TUTOR_PROMPT);
-      setLimitDraft(Object.fromEntries(Object.entries(limits).map(([name, value]) => [name, String(value)])) as Record<keyof AppLimits, string>);
+      setClassroomClientIdDraft(classroomId || '');
+      setClassroomConnected(Boolean(connected));
+      setClassroomAccountEmail(accountEmail);
+      setClassroomExpired(false);
     }).catch(error => showAppDialog(t('profile.appSettings.errors.open'), String(error), undefined, { variant: 'danger' }));
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void getSetting('welcome.enabled', true)
+      .then((enabled) => {
+        if (active) setWelcomeEnabled(enabled);
+      })
+      .catch((error) => {
+        if (active) {
+          showAppDialog(
+            t('profile.appSettings.errors.loadWelcome'),
+            error instanceof Error ? error.message : String(error),
+            undefined,
+            { variant: 'danger' },
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setWelcomeBusy(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [t]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    let active = true;
+    void prepareClassroomWebAuth()
+      .then(() => { if (active) setClassroomAuthReady(true); })
+      .catch(error => {
+        if (active) showAppDialog('Google Classroom', error instanceof Error ? error.message : String(error), undefined, { variant: 'danger' });
+      });
     return () => { active = false; };
   }, []);
 
@@ -148,25 +208,11 @@ export function ProfileAppSettings() {
     try {
       await setApiKey(apiKey);
       await setSetting('ai.textModel', textModel);
-      await setSetting('ai.visionModel', visionModel);
+      await setSetting('ai.visionModel', visionModel.trim());
       await setSetting('ai.systemPrompt', normalizeEditableTutorPrompt(systemPrompt.trim()) || DEFAULT_TUTOR_PROMPT);
       showAppDialog(t('profile.appSettings.dialogs.settingsSaved'), t('profile.appSettings.dialogs.keyStorage'), undefined, { variant: 'success' });
     } catch (error) {
         showAppDialog(t('profile.appSettings.errors.save'), error instanceof Error ? error.message : String(error), undefined, { variant: 'danger' });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const saveLimits = async () => {
-    setBusy(true);
-    try {
-      const limits = parseAppLimitDraft(limitDraft);
-      await saveAppLimits(limits);
-      setLimitDraft(Object.fromEntries(Object.entries(limits).map(([name, value]) => [name, String(value)])) as Record<keyof AppLimits, string>);
-      showAppDialog(t('profile.appSettings.dialogs.limitsSaved'), t('profile.appSettings.dialogs.limitsSavedMessage'), undefined, { variant: 'success' });
-    } catch (error) {
-      showAppDialog(t('profile.appSettings.errors.saveLimits'), error instanceof Error ? error.message : String(error), undefined, { variant: 'danger' });
     } finally {
       setBusy(false);
     }
@@ -180,6 +226,58 @@ export function ProfileAppSettings() {
       showAppDialog(t('profile.appSettings.dialogs.keyValid'), t('profile.appSettings.dialogs.keyValidMessage'), undefined, { variant: 'success' });
     } catch (error) {
       showAppDialog(t('profile.appSettings.errors.testKey'), error instanceof Error ? error.message : String(error), undefined, { variant: 'danger' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveClassroomClientId = async () => {
+    setBusy(true);
+    try {
+      await setClassroomClientId(classroomClientId);
+      const connected = await hasClassroomConnection();
+      setClassroomConnected(Boolean(connected));
+      setClassroomExpired(false);
+      showAppDialog('Google Classroom', 'O Client ID foi guardado localmente.', undefined, { variant: 'success' });
+    } catch (error) {
+      showAppDialog('Google Classroom', error instanceof Error ? error.message : String(error), undefined, { variant: 'danger' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleClassroomConnect = async () => {
+    setBusy(true);
+    setClassroomError('');
+    try {
+      await connectClassroom(classroomClientId);
+      await setClassroomClientId(classroomClientId);
+      const connected = await hasClassroomConnection();
+      if (!connected) throw new Error('O Google fechou a janela, mas o OStudy não conseguiu guardar a autorização. Tenta novamente e não feches a janela antes de terminar.');
+      setClassroomAccountEmail(await getClassroomAccountEmail());
+      setClassroomConnected(true);
+      setClassroomExpired(false);
+      showAppDialog('Google Classroom', 'Ligação concluída com sucesso.', undefined, { variant: 'success' });
+    } catch (error) {
+      setClassroomConnected(false);
+      setClassroomExpired(false);
+      const message = error instanceof Error ? error.message : String(error);
+      setClassroomError(message);
+      showAppDialog('Google Classroom', message, undefined, { variant: 'danger' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleClassroomDisconnect = async () => {
+    setBusy(true);
+    try {
+      await disconnectClassroom();
+      setClassroomConnected(false);
+      setClassroomAccountEmail(null);
+      setClassroomExpired(false);
+    } catch (error) {
+      showAppDialog('Google Classroom', error instanceof Error ? error.message : String(error), undefined, { variant: 'danger' });
     } finally {
       setBusy(false);
     }
@@ -308,7 +406,50 @@ export function ProfileAppSettings() {
     }
   };
 
+  const toggleWelcome = async () => {
+    const nextValue = !welcomeEnabled;
+    setWelcomeBusy(true);
+    try {
+      await setSetting('welcome.enabled', nextValue);
+      setWelcomeEnabled(nextValue);
+    } catch (error) {
+      showAppDialog(
+        t('profile.appSettings.errors.saveWelcome'),
+        error instanceof Error ? error.message : String(error),
+        undefined,
+        { variant: 'danger' },
+      );
+    } finally {
+      setWelcomeBusy(false);
+    }
+  };
+
   return <>
+    <SettingsSection
+      title={t('profile.appSettings.welcome.title')}
+      expanded={welcomeExpanded}
+      onToggle={() => setWelcomeExpanded(value => !value)}
+    >
+      <Text style={{ color: colors.textSecondary, lineHeight: 20 }}>
+        {t('profile.appSettings.welcome.description')}
+      </Text>
+      <Pressable
+        accessibilityRole="switch"
+        accessibilityState={{ checked: welcomeEnabled, disabled: welcomeBusy }}
+        disabled={welcomeBusy}
+        onPress={() => void toggleWelcome()}
+        style={{ minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', opacity: welcomeBusy ? 0.6 : 1 }}
+      >
+        <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600' }}>
+          {t('profile.appSettings.welcome.enabled')}
+        </Text>
+        <Ionicons
+          name={welcomeEnabled ? 'checkmark-circle' : 'ellipse-outline'}
+          size={24}
+          color={welcomeEnabled ? colors.primary : colors.textTertiary}
+        />
+      </Pressable>
+    </SettingsSection>
     <SettingsSection title={t('profile.appSettings.ai.title')} expanded={aiExpanded} onToggle={() => setAiExpanded(value => !value)}>
       <Text style={{ color: colors.textSecondary, lineHeight: 20 }}>{t('profile.appSettings.ai.keyHint')}</Text>
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12 }}>
@@ -364,42 +505,96 @@ export function ProfileAppSettings() {
         {t('profile.appSettings.ai.costNotice')}
       </Text>
 
-      <View style={{ height: 1, backgroundColor: colors.border, marginTop: 8 }} />
-      <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '700' }}>{t('profile.appSettings.limits.title')}</Text>
-      <Text style={{ color: colors.textSecondary, lineHeight: 20 }}>
-        {t('profile.appSettings.limits.description')}
-      </Text>
-      <Text style={{ color: colors.textTertiary, fontSize: 12, lineHeight: 18 }}>{t('profile.appSettings.limits.hint')}</Text>
-      {[...new Set(APP_LIMIT_FIELDS.map(field => field.group))].map(group => (
-        <View key={group} style={{ gap: 10, marginTop: 8 }}>
-          <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '700' }}>{t(`profile.appSettings.limits.groups.${group}`, { defaultValue: group })}</Text>
-          {APP_LIMIT_FIELDS.filter(field => field.group === group).map(field => (
-            <View key={field.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Text style={{ flex: 1, color: colors.textSecondary, lineHeight: 18 }}>
-                {t(`profile.appSettings.limits.fields.${field.key}`, { defaultValue: field.label })} ({t(`profile.appSettings.limits.units.${field.unit}`, { defaultValue: field.unit })})
-              </Text>
-              <TextInput
-                value={limitDraft[field.key]}
-                onChangeText={value => setLimitDraft(current => ({ ...current, [field.key]: value }))}
-                keyboardType="number-pad"
-                selectTextOnFocus
-                accessibilityLabel={t('profile.appSettings.limits.fieldAccessibility', {
-                  field: t(`profile.appSettings.limits.fields.${field.key}`, { defaultValue: field.label }),
-                  unit: t(`profile.appSettings.limits.units.${field.unit}`, { defaultValue: field.unit }),
-                })}
-                style={{ width: 96, minHeight: 44, color: colors.textPrimary, borderRadius: 10, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 10, textAlign: 'right' }}
-              />
-            </View>
-          ))}
+    </SettingsSection>
+
+    <SettingsSection title="Google Classroom" expanded={classroomExpanded} onToggle={() => setClassroomExpanded(value => !value)}>
+      <SettingsDisclosure title="Guia para Web" expanded={classroomWebGuideExpanded} onToggle={() => setClassroomWebGuideExpanded(value => !value)}>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          1. Ative a Google Classroom API e configure a tela de consentimento OAuth.
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          2. Crie um cliente OAuth do tipo Aplicativo da Web.
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          3. Em Origens JavaScript autorizadas, adicione http://localhost:8081 e a origem do site publicado.
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          4. Copie o Client ID para o campo abaixo.
+        </Text>
+      </SettingsDisclosure>
+      <SettingsDisclosure title="Guia para Android" expanded={classroomAndroidGuideExpanded} onToggle={() => setClassroomAndroidGuideExpanded(value => !value)}>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          1. Ative a Google Classroom API e configure a tela de consentimento OAuth.
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          2. Crie um cliente OAuth do tipo Android.
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          3. Informe o pacote com.ostudy.app e o SHA-1 da assinatura da versão instalada (debug, EAS ou Play).
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          SHA-1 da keystore EAS recém-gerada (para builds assinados com ela; a versão da Play pode usar outro):
+        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text numberOfLines={1} style={{ flex: 1, flexShrink: 1, color: colors.textPrimary, fontSize: 13, lineHeight: 18 }}>
+            9D:5B:1A:61:45:A4:...
+          </Text>
+          <Pressable
+            onPress={() => void copyClassroomSha1('9D:5B:1A:61:45:A4:E9:AF:0A:B5:6B:46:CC:CE:42:12:32:22:21:FD')}
+            accessibilityRole="button"
+            accessibilityLabel="Copiar SHA-1"
+            style={{ minHeight: 36, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8 }}
+          >
+            <Ionicons name={classroomSha1Copied ? 'checkmark' : 'copy-outline'} size={16} color={classroomSha1Copied ? '#22C55E' : colors.primary} />
+            <Text style={{ color: classroomSha1Copied ? '#22C55E' : colors.primary, fontSize: 12, fontWeight: '600' }}>
+              {classroomSha1Copied ? 'Copiado' : 'Copiar'}
+            </Text>
+          </Pressable>
         </View>
-      ))}
-      <Button title={t('profile.appSettings.limits.save')} onPress={() => void saveLimits()} loading={busy} />
-      <Button
-        title={t('profile.appSettings.limits.restore')}
-        onPress={() => setLimitDraft(Object.fromEntries(Object.entries(DEFAULT_APP_LIMITS).map(([name, value]) => [name, String(value)])) as Record<keyof AppLimits, string>)}
-        disabled={busy}
-        variant="outline"
+        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+          4. Copie o Client ID para o campo abaixo.
+        </Text>
+      </SettingsDisclosure>
+      <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600' }}>Client ID</Text>
+      <TextInput
+        value={classroomClientId}
+        onChangeText={setClassroomClientIdDraft}
+        autoCapitalize="none"
+        autoCorrect={false}
+        placeholder="1234567890-abc123.apps.googleusercontent.com"
+        placeholderTextColor={colors.textTertiary}
+        style={{ minHeight: 48, color: colors.textPrimary, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12 }}
       />
+      <Button title="Guardar Client ID" onPress={() => void saveClassroomClientId()} loading={busy} variant="outline" />
+      <Pressable accessibilityRole="link" onPress={() => void Linking.openURL('https://console.cloud.google.com/')}>
+        <Text style={{ color: colors.primary, textDecorationLine: 'underline' }}>Abrir Google Cloud Console</Text>
+      </Pressable>
+      {classroomExpired && (
+        <Text style={{ color: colors.warning, fontSize: 12, fontWeight: '600' }}>
+          Ligação ao Classroom expirou — reconectar
+        </Text>
+      )}
+      {classroomError ? (
+        <Text accessibilityRole="alert" style={{ color: colors.error, fontSize: 13, lineHeight: 18 }}>
+          {classroomError}
+        </Text>
+      ) : null}
+      {classroomConnected ? (
+        <>
+          {classroomAccountEmail && (
+            <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+              Conta conectada: {classroomAccountEmail}
+            </Text>
+          )}
+          <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
+            Para ver as tarefas: abra um Space, toque em editar, escolha a turma em “Turma do Google Classroom” e guarde. A aba Classroom aparece dentro desse Space.
+          </Text>
+          <Button title="Reconectar / trocar conta Google" onPress={() => void handleClassroomConnect()} loading={busy} variant="outline" disabled={!classroomAuthReady} />
+          <Button title="Desligar" onPress={() => void handleClassroomDisconnect()} loading={busy} variant="outline" />
+        </>
+      ) : (
+        <Button title="Ligar ao Google Classroom" onPress={() => void handleClassroomConnect()} loading={busy} disabled={!classroomAuthReady} />
+      )}
     </SettingsSection>
 
     <SettingsSection title={t('profile.appSettings.data.sectionTitle')} expanded={dataExpanded} onToggle={() => setDataExpanded(value => !value)}>
@@ -463,19 +658,19 @@ export function ProfileAppSettings() {
               )}
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 <Pressable onPress={() => void backupNow()} disabled={backupBusy} accessibilityRole="button"
-                      style={({ focused }) => ({ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: focused ? 1 : 0, borderColor: colors.primary })}>
+                      style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.primary }}>
                   <Ionicons name="download-outline" size={18} color={colors.primary} />
                   <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.backupNow')}</Text>
                 </Pressable>
                 {Platform.OS === 'web' && (
                   <Pressable onPress={() => void enableAutomaticBackup()} disabled={backupBusy || !supportsWebBackups} accessibilityRole="button"
-                    style={({ focused }) => ({ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: focused ? 1 : 0, borderColor: colors.primary, opacity: backupBusy ? 0.5 : 1 })}>
+                    style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.primary, opacity: backupBusy ? 0.5 : 1 }}>
                     <Ionicons name="folder-open-outline" size={18} color={colors.primary} />
                     <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.changeFolder')}</Text>
                   </Pressable>
                 )}
                 <Pressable onPress={() => void turnOffAutomaticBackup()} disabled={backupBusy} accessibilityRole="button"
-                  style={({ focused }) => ({ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: focused ? 1 : 0, borderColor: colors.primary })}>
+                  style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.primary }}>
                   <Ionicons name="pause-circle-outline" size={18} color={colors.textSecondary} />
                   <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.deactivate')}</Text>
                 </Pressable>
@@ -484,10 +679,10 @@ export function ProfileAppSettings() {
           ) : (
             <Pressable onPress={() => void enableAutomaticBackup()} disabled={backupBusy || !supportsWebBackups}
               accessibilityRole="button" accessibilityState={{ disabled: backupBusy || !supportsWebBackups }}
-              style={({ pressed, focused }) => ({
+              style={({ pressed }) => ({
                 minHeight: 40,
                 borderRadius: 999,
-                borderWidth: focused ? 2 : 0,
+                borderWidth: 0,
                 borderColor: colors.textPrimary,
                 paddingHorizontal: 18,
                 alignItems: 'center',
@@ -508,13 +703,13 @@ export function ProfileAppSettings() {
         <View style={{ padding: 16, gap: 8, borderRadius: 12, backgroundColor: colors.surface }}>
           <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', marginBottom: 2 }}>{t('profile.appSettings.data.yourData')}</Text>
           <Pressable onPress={() => void exportData()} disabled={busy} accessibilityRole="button"
-            style={({ pressed, hovered, focused }) => ({
+            style={({ pressed, hovered }) => ({
               minHeight: 56,
               flexDirection: 'row',
               alignItems: 'center',
               gap: 12,
               borderRadius: 8,
-              borderWidth: focused ? 1 : 0,
+              borderWidth: 0,
               borderColor: colors.primary,
               paddingHorizontal: 10,
               backgroundColor: pressed || hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
@@ -528,13 +723,13 @@ export function ProfileAppSettings() {
             <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
           </Pressable>
           <Pressable onPress={() => void importData()} disabled={busy} accessibilityRole="button"
-            style={({ pressed, hovered, focused }) => ({
+            style={({ pressed, hovered }) => ({
               minHeight: 56,
               flexDirection: 'row',
               alignItems: 'center',
               gap: 12,
               borderRadius: 8,
-              borderWidth: focused ? 1 : 0,
+              borderWidth: 0,
               borderColor: colors.primary,
               paddingHorizontal: 10,
               backgroundColor: pressed || hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
@@ -552,14 +747,14 @@ export function ProfileAppSettings() {
         <View style={{ padding: 16, paddingTop: 24, gap: 12, borderTopWidth: 1, borderColor: colors.border }}>
           <Text style={{ color: colors.error, fontSize: 14, fontWeight: '600' }}>{t('profile.appSettings.data.dangerZone')}</Text>
           <Pressable onPress={() => setDeleteConfirmationVisible(true)} disabled={busy} accessibilityRole="button"
-            style={({ pressed, focused }) => ({
+            style={({ pressed }) => ({
               minHeight: 44,
               alignSelf: 'flex-start',
               flexDirection: 'row',
               alignItems: 'center',
               gap: 8,
               borderRadius: 999,
-              borderWidth: focused ? 2 : 1,
+              borderWidth: 1,
               borderColor: colors.error,
               paddingHorizontal: 16,
               opacity: busy ? 0.5 : pressed ? 0.7 : 1,

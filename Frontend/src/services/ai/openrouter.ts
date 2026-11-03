@@ -73,16 +73,6 @@ export function completeText(
   return requestCompletion(model, [{ role: 'system', content: systemPrompt }, ...history], signal);
 }
 
-export function completeWithImages(
-  model: string,
-  systemPrompt: string,
-  history: AiTurn[],
-  images: { mimeType: string; base64: string }[],
-  signal?: AbortSignal,
-): Promise<string> {
-  return completeWithAttachments(model, systemPrompt, history, { images }, signal);
-}
-
 export function completeWithAttachments(
   model: string,
   systemPrompt: string,

@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useThemeColors, radius } from '../../constants/theme';
-import { OrenAvatar } from '../common/OrenAvatar';
+import { useThemeColors } from '../../constants/theme';
 
 export const TypingIndicator: React.FC = () => {
   // StyleSheet.create() não funciona com cores dinâmicas (hook) porque é
@@ -42,18 +41,10 @@ export const TypingIndicator: React.FC = () => {
   }, [pulseAnim]);
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 8, marginHorizontal: 12, alignSelf: 'flex-start' }}>
-      <OrenAvatar size={28} />
-      <View style={{
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: 'transparent',
-        paddingHorizontal: 14, paddingVertical: 8,
-        borderRadius: radius.md, marginLeft: 8,
-      }}>
-        <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: '500' }}>
-          · {safePhases[phaseIndex % safePhases.length]}
-        </Text>
-      </View>
+    <View style={{ marginVertical: 8, marginHorizontal: 16, alignSelf: 'flex-start' }}>
+      <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: '500' }}>
+        {safePhases[phaseIndex % safePhases.length]}
+      </Text>
     </View>
   );
 };

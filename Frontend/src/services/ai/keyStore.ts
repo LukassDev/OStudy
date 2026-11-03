@@ -1,13 +1,41 @@
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
-const API_KEY_STORAGE_KEY = 'orenstudy.openrouter.api-key';
+const API_KEY_STORAGE_KEY = 'ostudy.openrouter.api-key';
+const LEGACY_API_KEY_STORAGE_KEY = 'orenstudy.openrouter.api-key';
+
+async function readStoredKey(key: string): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    return typeof window === 'undefined' ? null : window.localStorage.getItem(key);
+  }
+  return SecureStore.getItemAsync(key);
+}
+
+async function writeStoredKey(key: string, value: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    if (typeof window === 'undefined') throw new Error('O armazenamento local não está disponível.');
+    window.localStorage.setItem(key, value);
+    return;
+  }
+  await SecureStore.setItemAsync(key, value);
+}
 
 export async function getApiKey(): Promise<string | null> {
+  const key = await readStoredKey(API_KEY_STORAGE_KEY);
+  if (key) return key;
+  const legacyKey = await readStoredKey(LEGACY_API_KEY_STORAGE_KEY);
+  if (!legacyKey) return null;
+  await writeStoredKey(API_KEY_STORAGE_KEY, legacyKey);
+  await removeStoredKey(LEGACY_API_KEY_STORAGE_KEY);
+  return legacyKey;
+}
+
+async function removeStoredKey(key: string): Promise<void> {
   if (Platform.OS === 'web') {
-    return typeof window === 'undefined' ? null : window.localStorage.getItem(API_KEY_STORAGE_KEY);
+    if (typeof window !== 'undefined') window.localStorage.removeItem(key);
+    return;
   }
-  return SecureStore.getItemAsync(API_KEY_STORAGE_KEY);
+  await SecureStore.deleteItemAsync(key);
 }
 
 export async function setApiKey(value: string): Promise<void> {
@@ -16,18 +44,12 @@ export async function setApiKey(value: string): Promise<void> {
     await removeApiKey();
     return;
   }
-  if (Platform.OS === 'web') {
-    if (typeof window === 'undefined') throw new Error('O armazenamento local não está disponível.');
-    window.localStorage.setItem(API_KEY_STORAGE_KEY, key);
-    return;
-  }
-  await SecureStore.setItemAsync(API_KEY_STORAGE_KEY, key);
+  await writeStoredKey(API_KEY_STORAGE_KEY, key);
 }
 
 export async function removeApiKey(): Promise<void> {
-  if (Platform.OS === 'web') {
-    if (typeof window !== 'undefined') window.localStorage.removeItem(API_KEY_STORAGE_KEY);
-    return;
-  }
-  await SecureStore.deleteItemAsync(API_KEY_STORAGE_KEY);
+  await Promise.all([
+    removeStoredKey(API_KEY_STORAGE_KEY),
+    removeStoredKey(LEGACY_API_KEY_STORAGE_KEY),
+  ]);
 }

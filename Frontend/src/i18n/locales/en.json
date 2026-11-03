@@ -17,53 +17,46 @@
     "preparingStudySpace": "Preparing your study space..."
   },
   "onboarding": {
-    "step1": {
-      "title": "Welcome to OStudy.",
-      "subtitle": "Take your studies to the next level."
-    },
-    "step2": {
-      "title": "Meet Oren, your smart tutor",
-      "text": "Oren tracks your progress, builds study plans tailored to you, and helps you understand the material — anytime, in any Space."
-    },
-    "step3": {
-      "title": "What's your name?",
-      "subtitle": "Your name helps us personalize your study experience.",
-      "namePlaceholder": "John Smith",
-      "languageLabel": "App language",
-      "languageHint": "You can change this anytime in your Profile."
-    },
-    "step4": {
-      "title": "What's your goal?",
-      "subtitle": "This helps the Tutor adapt to you.",
-      "goals": {
-        "improveGrades": "Improve grades",
-        "prepareExams": "Prepare for exams",
-        "learnSomethingNew": "Learn something new",
-        "organizeStudies": "Organize studies",
-        "other": "Other"
-      },
-      "customGoalPlaceholder": "E.g.: Learn to code"
-    },
-    "step5": {
-      "title": "Choose your avatar",
-      "subtitle": "You can always change it later, in your Profile.",
-      "initials": "Initials"
-    },
-    "step6": {
-      "title": "Light or dark mode?",
-      "subtitle": "You can switch anytime, in your Profile.",
-      "light": "Light",
-      "dark": "Dark",
-      "spaceHint": "You can create your first study Space from the dashboard."
-    },
-    "nextLabel": "Continue",
-    "startLabel": "Start studying",
+    "title": "Set up your profile",
+    "defaultName": "User",
+    "nameLabel": "Name",
+    "avatarLabel": "Choose your avatar",
+    "languageLabel": "App language",
+    "themeLabel": "Appearance",
+    "light": "Light",
+    "dark": "Dark",
+    "startLabel": "Get started",
     "errors": {
-      "nameRequired": "Tell us your name.",
-      "goalRequired": "Choose a goal.",
-      "customGoalRequired": "Write down your goal.",
+      "nameRequired": "Enter your name.",
       "saveFailed": "Error saving your profile. Please try again."
     }
+  },
+  "welcome": {
+    "messages": {
+      "dawn": [
+        "A fresh start. Ready to learn?",
+        "The quiet dawn is yours to focus.",
+        "A new day, a new idea to explore."
+      ],
+      "morning": [
+        "Good morning! Make today a day of learning.",
+        "Good morning! One step at a time.",
+        "Ready to start with a bright idea?"
+      ],
+      "afternoon": [
+        "Good afternoon! You're making progress.",
+        "Every small step moves you forward.",
+        "There's still time to learn something new."
+      ],
+      "night": [
+        "Good evening! Let's focus and finish strong.",
+        "A little more learning, at your own pace.",
+        "Glad you're here. Let's get started."
+      ]
+    },
+    "fallback": "Hello! It's good to have you here.",
+    "loadError": "Could not load the welcome screen setting.",
+    "retry": "Try again"
   },
   "dashboard": {
     "greetings": {
@@ -102,26 +95,19 @@
       "spaceCount_other": "You have {{count}} Spaces organized. Have you thought about reviewing the older topics?"
     },
     "defaultStudentName": "Student",
-    "orenSays": "Oren says:",
     "stats": {
-      "spaces": "Spaces",
-      "chats": "Chats"
+      "spaces": "Spaces"
     },
-    "searchPlaceholder": "Search subjects or chats...",
+    "searchPlaceholder": "Search Spaces...",
     "sections": {
       "yourSpaces": "Your Spaces",
       "createNew": "+ Create New",
-      "recentChats": "Recent conversations",
       "continueStudying": "Continue Studying"
     },
     "emptySpaces": {
       "title": "Create your first Space",
       "subtitle": "A Space organizes notes, tasks, and chats for a subject.",
       "action": "Create Space"
-    },
-    "emptyChats": {
-      "title": "No recent chats yet",
-      "subtitle": "Once you start studying with Oren, your chats will show up here."
     },
     "spaceSubLabel_one": "{{count}} sub-space",
     "spaceSubLabel_other": "{{count}} sub-spaces",
@@ -142,7 +128,6 @@
       "privacySettings": "Privacy and settings"
     },
     "namePlaceholder": "Your name",
-    "goalPlaceholder": "E.g.: Get an A in Math",
     "saveChanges": "Save changes",
     "theme": {
       "light": "Light",
@@ -150,9 +135,15 @@
     },
     "language": {
       "rowLabel": "App language",
-      "hint": "This only changes the app's interface. Oren always replies in the language you write to him in."
+      "hint": "This only changes the app's interface. OStudy always replies in the language you write to it in."
     },
     "appSettings": {
+      "welcome": {
+        "title": "Welcome screen",
+        "description": "Show a greeting when opening the app, before continuing.",
+        "enabled": "Show on app launch",
+        "disabled": "Hide on app launch"
+      },
       "ai": {
         "title": "AI settings",
         "keyHint": "Your key is stored securely on this device.",
@@ -173,7 +164,7 @@
       },
       "limits": {
         "title": "Tutor limits",
-        "description": "Adjust limits for the tutor, attachments, resources, quizzes, and previews.",
+        "description": "Adjust limits for the tutor and Space resources.",
         "hint": "Use whole numbers; changes apply to future requests.",
         "save": "Save limits",
         "restore": "Restore default limits",
@@ -284,7 +275,9 @@
         "interval": "Could not save interval",
         "backup": "Could not save backup",
         "import": "Import failed",
-        "delete": "Could not delete data"
+        "delete": "Could not delete data",
+        "loadWelcome": "Could not load the welcome screen setting",
+        "saveWelcome": "Could not save the welcome screen setting"
       }
     }
   },
@@ -475,10 +468,10 @@
     },
     "attachedImageFallback": "梼 Attached image",
     "analyzedImageLabel": "Analyzed image",
-    "orenName": "Oren",
+    "assistantName": "OStudy",
     "scrollToLatest": "Go to latest message",
     "emptyState": {
-      "title": "Hi! I'm Oren",
+      "title": "Hi! I'm OStudy",
       "subtitle": "Your personal AI tutor. What do you want to practice, review, or work through today?"
     },
     "errors": {
@@ -489,7 +482,7 @@
       "noActiveSession": "No active session. Please log in again.",
       "spaceNotFound": "Space ID not found for this chat.",
       "sessionExpired": "Session expired. Please log in again.",
-      "maintenanceMode": "Oren is under maintenance right now. Please try again later.",
+      "maintenanceMode": "OStudy is under maintenance right now. Please try again later.",
       "communicationError": "Error communicating with the Tutor.",
       "unsupportedVideoTitle": "Video not supported",
       "unsupportedVideoMessage": "Chat accepts images and documents, but not videos."
@@ -504,9 +497,10 @@
       "loadingTitle": "Loading image...",
       "loadingSubtitle": "Just a moment",
       "attachedTitle": "Exercise Image Attached",
-      "attachedSubtitle": "Ready to be analyzed by Oren"
+      "attachedSubtitle": "Ready to be analyzed by OStudy"
     },
     "inputPlaceholder": "Ask for an explanation, send a question...",
+    "aiDisclaimer": "AI can make mistakes.",
     "mode": {
       "flash": "Flash",
       "deep": "Deep"
@@ -528,14 +522,15 @@
       "docTooBigTitle": "File too large",
       "docTooBigMessage": "The document cannot exceed {{limit}} MiB.",
       "imageTooBigTitle": "Image too large",
-      "imageTooBigMessage": "Even after compression, this image exceeds {{limit}} MiB. Choose or take a smaller image."
+      "imageTooBigMessage": "Even after compression, this image exceeds {{limit}} MiB. Choose or take a smaller image.",
+      "visionModelRequiredTitle": "Vision model required",
+      "visionModelRequiredMessage": "Set and save a vision model ID in Profile > App settings > AI before attaching images or documents."
     },
     "optionsModal": {
       "title": "Conversation Options",
       "nameLabel": "Conversation name",
       "namePlaceholder": "Ex: History Summary",
       "saveNameButton": "Save Name",
-      "bubbleColorLabel": "Your message color",
       "deleteButton": "Delete Conversation"
     },
     "typingPhases": [
@@ -583,7 +578,6 @@
     "searchPlaceholder": "Search Spaces...",
     "sections": {
       "favorites": "Favorites",
-      "recentChats": "Recent Chats",
       "spaces": "Spaces"
     },
     "noResults": "No results",
@@ -637,14 +631,13 @@
     "modulesTitle": "Plan modules",
     "empty": {
       "title": "You don't have a plan for this Space yet",
-      "subtitle": "Talk to Oren in the chat and ask, for example: \"put together a study plan for this subject\". Modules will show up here automatically as you talk.",
-      "action": "Start a chat with Oren"
+      "subtitle": "Talk to OStudy in the chat and ask, for example: \"put together a study plan for this subject\". Modules will show up here automatically as you talk.",
+      "action": "Start a chat with OStudy"
     }
   },
   "spaces": {
     "tabs": {
-      "chats": "Oren",
-      "plan": "Plan",
+      "chats": "Chat",
       "content": "Content",
       "calendar": "Calendar",
       "grades": "Grades",
@@ -728,6 +721,9 @@
     "dragSpacesHint": "Hold a Space to move it. Swipe normally to see the others. Tap Done to save.",
     "upcomingEvents": "Upcoming events",
     "noUpcomingEvents": "No upcoming events.",
+    "todayLabel": "Today",
+    "tomorrowLabel": "Tomorrow",
+    "noUpcomingLessons": "No upcoming classes.",
     "globalAverage": "Overall grade average",
     "chooseModules": "Choose your modules to see your overall average.",
     "timetable": "Timetable",

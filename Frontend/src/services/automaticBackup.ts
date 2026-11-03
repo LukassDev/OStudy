@@ -10,7 +10,8 @@ const ENABLED_KEY = 'backup.automatic.enabled';
 const INTERVAL_KEY = 'backup.automatic.intervalHours';
 const LAST_BACKUP_KEY = 'backup.automatic.lastAt';
 const LAST_ERROR_KEY = 'backup.automatic.lastError';
-const DIRECTORY_DB = 'orenstudy-auto-backup';
+const DIRECTORY_DB = 'ostudy-auto-backup';
+const LEGACY_DIRECTORY_DB = 'orenstudy-auto-backup';
 const DIRECTORY_STORE = 'handles';
 const DIRECTORY_HANDLE_KEY = 'backup-directory';
 const BACKUP_FOLDER_NAME = 'OStudy Backups';
@@ -64,9 +65,9 @@ function bytesToBase64(bytes: Uint8Array): string {
   return encoded;
 }
 
-function openHandleDatabase(): Promise<IDBDatabase> {
+function openHandleDatabase(name: string): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DIRECTORY_DB, 1);
+    const request = indexedDB.open(name, 1);
     request.onupgradeneeded = () => request.result.createObjectStore(DIRECTORY_STORE);
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error('Não foi possível guardar a pasta de backup do navegador.'));
@@ -74,7 +75,7 @@ function openHandleDatabase(): Promise<IDBDatabase> {
 }
 
 async function saveDirectoryHandle(handle: DirectoryHandle): Promise<void> {
-  const database = await openHandleDatabase();
+  const database = await openHandleDatabase(DIRECTORY_DB);
   try {
     await new Promise<void>((resolve, reject) => {
       const transaction = database.transaction(DIRECTORY_STORE, 'readwrite');
@@ -88,8 +89,8 @@ async function saveDirectoryHandle(handle: DirectoryHandle): Promise<void> {
   }
 }
 
-async function readDirectoryHandle(): Promise<DirectoryHandle | null> {
-  const database = await openHandleDatabase();
+async function readDirectoryHandleFrom(name: string): Promise<DirectoryHandle | null> {
+  const database = await openHandleDatabase(name);
   try {
     return await new Promise((resolve, reject) => {
       const transaction = database.transaction(DIRECTORY_STORE, 'readonly');
@@ -100,6 +101,14 @@ async function readDirectoryHandle(): Promise<DirectoryHandle | null> {
   } finally {
     database.close();
   }
+}
+
+async function readDirectoryHandle(): Promise<DirectoryHandle | null> {
+  const handle = await readDirectoryHandleFrom(DIRECTORY_DB);
+  if (handle) return handle;
+  const legacyHandle = await readDirectoryHandleFrom(LEGACY_DIRECTORY_DB);
+  if (legacyHandle) await saveDirectoryHandle(legacyHandle);
+  return legacyHandle;
 }
 
 async function getWritableBackupDirectory(): Promise<DirectoryHandle> {

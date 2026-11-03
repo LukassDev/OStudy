@@ -17,7 +17,7 @@ export default function MathDocument({ body, css }: { body: string; css: string 
       onMessage={event => {
         try {
           const data = JSON.parse(event.nativeEvent.data);
-          if (data.type === 'oren-math-height' && Number.isFinite(data.height) && data.height > 0) setHeight(data.height);
+          if (data.type === 'ostudy-math-height' && Number.isFinite(data.height) && data.height > 0) setHeight(data.height);
         } catch { /* Ignore unrelated bridge messages. */ }
       }} />
   </View>;

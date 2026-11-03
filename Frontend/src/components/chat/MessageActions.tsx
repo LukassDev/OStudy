@@ -11,13 +11,13 @@ interface MessageActionsProps {
   /** 'tutor' mostra o botão sempre visível por baixo da mensagem; 'user'
    * é pensado para aparecer via long-press (ver onLongPress no bubble). */
   role: 'tutor' | 'user';
-  /** Alinhamento do botão — normalmente 'flex-start' para o Oren e
+  /** Alinhamento do botão — normalmente 'flex-start' para o tutor e
    * 'flex-end' para o utilizador, para acompanhar o lado da bolha. */
   align?: 'flex-start' | 'flex-end';
 }
 
 /**
- * Ação de copiar mensagem completa. Para o Oren, mostra-se como um pequeno
+ * Ação de copiar mensagem completa. Para o tutor, mostra-se como um pequeno
  * botão persistente por baixo da resposta (como um "action button"). Para o
  * utilizador, o componente que renderiza a bolha deve chamar `copy(content)`
  * a partir de um onLongPress na própria bolha — este componente exporta o

@@ -6,8 +6,8 @@ import katexStyles from './katexStyles.generated';
 export default function MathDocument({ body, css }: { body: string; css: string }) {
   const id = 'math-' + useId().replace(/[^a-zA-Z0-9_-]/g, '');
   return <div id={id} style={{ width: '100%', minWidth: 0 }}>
-    <style href="oren-katex" precedence="default">{katexStyles}</style>
-    <style>{css.replace(/\.oren-math-message/g, `#${id} .oren-math-message`)}</style>
-    <div className="oren-math-message" dangerouslySetInnerHTML={{ __html: body }} />
+    <style href="ostudy-katex" precedence="default">{katexStyles}</style>
+    <style>{css.replace(/\.ostudy-math-message/g, `#${id} .ostudy-math-message`)}</style>
+    <div className="ostudy-math-message" dangerouslySetInnerHTML={{ __html: body }} />
   </div>;
 }

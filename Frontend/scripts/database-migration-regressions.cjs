@@ -27,17 +27,23 @@ const schemaNames = [...schemaModule.exports.INITIAL_SCHEMA.matchAll(/CREATE TAB
 
 function fakeDatabase(initialTables, version) {
   const tables = new Set(initialTables);
+  const spaceColumns = new Set(version < 2 ? ['id'] : ['id', 'google_classroom_course_id']);
   const execCalls = [];
   let currentVersion = version;
   return {
     tables,
     execCalls,
     getFirstAsync: async () => ({ user_version: currentVersion }),
-    getAllAsync: async () => [...tables].map(name => ({ name })),
+    getAllAsync: async sql => sql.startsWith('PRAGMA table_info("spaces")')
+      ? [...spaceColumns].map(name => ({ name }))
+      : [...tables].map(name => ({ name })),
     withTransactionAsync: async callback => callback(),
     execAsync: async sql => {
       execCalls.push(sql);
       for (const match of sql.matchAll(/CREATE TABLE IF NOT EXISTS (\w+)/g)) tables.add(match[1]);
+      if (sql.includes('ALTER TABLE spaces ADD COLUMN google_classroom_course_id')) {
+        spaceColumns.add('google_classroom_course_id');
+      }
       const version = sql.match(/PRAGMA user_version = (\d+)/);
       if (version) currentVersion = Number(version[1]);
     },
@@ -49,14 +55,17 @@ async function main() {
   const missingChats = fakeDatabase(schemaNames.filter(name => name !== 'chats'), 1);
   await migrateDatabase(missingChats);
   assert.ok(missingChats.tables.has('chats'), 'An existing version-1 DB missing chats is repaired.');
-  assert.equal(missingChats.execCalls.length, 2);
+  assert.ok(missingChats.tables.has('classroom_ignored_events'), 'An existing version-1 DB gets Classroom event exclusions.');
+  assert.ok(missingChats.execCalls.includes('ALTER TABLE spaces ADD COLUMN google_classroom_course_id TEXT'),
+    'An existing version-1 DB gets the new Classroom course ID column.');
+  assert.equal(missingChats.execCalls.length, 3);
   assert.match(missingChats.execCalls[0], /CREATE TABLE IF NOT EXISTS chats/);
 
-  const currentDb = fakeDatabase(schemaNames, 1);
+  const currentDb = fakeDatabase(schemaNames, schemaModule.exports.DATABASE_VERSION);
   await migrateDatabase(currentDb);
   assert.equal(currentDb.execCalls.length, 0, 'Complete current databases are not rewritten.');
 
-  const newerDb = fakeDatabase(schemaNames, 2);
+  const newerDb = fakeDatabase(schemaNames, schemaModule.exports.DATABASE_VERSION + 1);
   await assert.rejects(migrateDatabase(newerDb), /mais recente/);
   console.log('Passed: missing-table database repair, no-op current migration, and future-version rejection.');
 }

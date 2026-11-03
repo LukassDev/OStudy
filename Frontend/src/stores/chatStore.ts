@@ -15,8 +15,22 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 import i18n from '../i18n';
-import { tutorReply, saveTutorReply } from '../services/tutor/tutor';
+import { generateChatTitle, tutorReply, saveTutorReply, type TutorResponseMode } from '../services/tutor/tutor';
 import { getAppLimits } from '../services/appLimits';
+
+const chatTitleGenerationInProgress = new Set<string>();
+const DEFAULT_CHAT_TITLES = [
+  'Study Session',
+  'Sessão de Estudo',
+  "Session d'étude",
+  'Sesión de Estudio',
+  'Lernsitzung',
+  'Sessione di Studio',
+];
+
+function isDefaultChatTitle(title: string): boolean {
+  return DEFAULT_CHAT_TITLES.includes(title.trim());
+}
 
 export class ChatAttachmentTooLargeError extends Error {
   readonly code = 'CHAT_ATTACHMENT_TOO_LARGE';
@@ -119,7 +133,7 @@ export interface Message {
 function visibleStoredMessageContent(content: string): string {
   return (content || '')
     .replace(
-      /<oren_attachment_context\b[^>]*>[\s\S]*?<\/oren_attachment_context>/gi,
+      /<(?:ostudy|oren)_attachment_context\b[^>]*>[\s\S]*?<\/(?:ostudy|oren)_attachment_context>/gi,
       '',
     )
     .replace(/\s+/g, ' ')
@@ -240,7 +254,7 @@ interface ChatState {
   fetchChatById: (chatId: string) => Promise<void>;
   fetchMessages: (chatId: string) => Promise<void>;
   createChat: (spaceId: string, title?: string) => Promise<Chat>;
-  sendMessage: (chatId: string, content: string, images?: ChatImageInput[], document?: ChatDocumentInput | ChatDocumentInput[]) => Promise<void>;
+  sendMessage: (chatId: string, content: string, images?: ChatImageInput[], document?: ChatDocumentInput | ChatDocumentInput[], mode?: TutorResponseMode) => Promise<void>;
   stopGeneration: () => void;
   renameChat: (chatId: string, title: string) => Promise<void>;
   deleteChat: (chatId: string) => Promise<void>;
@@ -403,17 +417,21 @@ export const useChatStore = create<ChatState>((set, get) => ({
     return data;
   },
 
-  sendMessage: async (chatId: string, content: string, images: ChatImageInput[] = [], document?: ChatDocumentInput | ChatDocumentInput[]) => {
+  sendMessage: async (chatId: string, content: string, images: ChatImageInput[] = [], document?: ChatDocumentInput | ChatDocumentInput[], mode: TutorResponseMode = 'flash') => {
     const documents = Array.isArray(document) ? document : document ? [document] : [];
     if (!content.trim() && images.length === 0 && documents.length === 0) return;
     if (images.length + documents.length > 5) { set({ error: i18n.language.startsWith('pt') ? 'Máximo de 5 ficheiros por mensagem.' : 'Maximum 5 files per message.' }); return; }
 
-    let spaceId = get().currentChat?.id === chatId ? get().currentChat?.space_id : undefined;
-    if (!spaceId) {
-      const data = await getChat(chatId);
-      if (data) spaceId = data.space_id;
-      else throw new Error(i18n.t('chat.errors.spaceNotFound'));
-    }
+    const chat = get().currentChat?.id === chatId ? get().currentChat : await getChat(chatId);
+    if (!chat) throw new Error(i18n.t('chat.errors.spaceNotFound'));
+    const shouldGenerateTitle = isDefaultChatTitle(chat.title)
+      && !chatTitleGenerationInProgress.has(chatId)
+      && (await listMessages(chatId)).length === 0;
+    if (shouldGenerateTitle) chatTitleGenerationInProgress.add(chatId);
+    const titleContent = content.trim()
+      || documents.map(item => item.name).filter(Boolean).join(', ')
+      || (images.length ? i18n.t('chat.analyzedImageLabel') : '');
+    let titleGeneration: Promise<void> | null = null;
 
     const tempUserId = createId();
 
@@ -468,11 +486,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
             : chat),
         }));
 
+        if (shouldGenerateTitle && titleContent) {
+          titleGeneration = generateChatTitle(titleContent)
+            .then(async (title) => {
+              const latestChat = await getChat(chatId);
+              if (latestChat && isDefaultChatTitle(latestChat.title)) {
+                await get().renameChat(chatId, title);
+              }
+            })
+            .catch((error) => console.error('Could not generate AI chat title:', error))
+            .finally(() => chatTitleGenerationInProgress.delete(chatId));
+        }
+
         const result = await tutorReply({
           chatId,
           content,
           images,
           documents,
+          mode,
           signal: controller.signal,
         });
         if (requestId !== activeRequestId || controller.signal.aborted) return;
@@ -501,6 +532,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
     } finally {
+      if (titleGeneration) await titleGeneration;
+      else if (shouldGenerateTitle) chatTitleGenerationInProgress.delete(chatId);
       clearTimeout(stopDelay);
       if (activeRequestId === requestId) {
         activeAbortController = null;

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Platform, Text, TouchableOpacity, View } from "react-native";
-import { webSpaceColumns } from '../../utils/webLayout';
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { runOnJS, useSharedValue, useAnimatedStyle, withTiming, type SharedValue } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -12,7 +11,7 @@ import { SpaceIcon } from "../spaces/SpaceIcon";
 import { guardedPush } from "../../utils/navigation";
 import { showAppDialog } from "../ui/AppDialog";
 
-const HEIGHT = Platform.OS === 'web' ? 132 : 150;
+const HEIGHT = 88;
 const GAP = 12;
 
 export function SpaceGrid({ spaces, onDragging, editing = false, onReorder }: {
@@ -22,7 +21,7 @@ export function SpaceGrid({ spaces, onDragging, editing = false, onReorder }: {
   onReorder?: (ids: string[]) => void;
 }) {
   const [width, setWidth] = useState(0);
-  const columns = Platform.OS === 'web' || width >= 600 ? webSpaceColumns(width) : width > 0 && width < 300 ? 1 : 2;
+  const columns = 1;
   const order = useSharedValue(spaces.map(space => space.id));
   const active = useSharedValue<string | null>(null);
   useEffect(() => {
@@ -30,9 +29,9 @@ export function SpaceGrid({ spaces, onDragging, editing = false, onReorder }: {
   }, [spaces, active, order]);
   useEffect(() => () => onDragging(false), [onDragging]);
   return (
-    <View onLayout={e => setWidth(e.nativeEvent.layout.width)} style={{ height: Math.ceil(spaces.length / columns) * (HEIGHT + GAP), marginBottom: 12 }}>
+    <View onLayout={e => setWidth(e.nativeEvent.layout.width)} style={{ height: spaces.length * (HEIGHT + GAP), marginBottom: 12 }}>
       {width > 0 && spaces.map(space => (
-        <DraggableSpace key={space.id} space={space} columns={columns} cell={(width + GAP) / columns} order={order} active={active}
+        <DraggableSpace key={space.id} space={space} columns={columns} cell={width + GAP} order={order} active={active}
           editing={editing} onDragging={onDragging} onReorder={onReorder} />
       ))}
     </View>
@@ -121,7 +120,10 @@ function DraggableSpace({ space, cell, columns, order, active, editing, onDraggi
                 onPress={() => guardedPush(`/(app)/spaces/${space.id}`)}
                 style={{
                   flex: 1,
-                  padding: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
                   borderRadius: 16,
                   overflow: "hidden",
                   backgroundColor: colors.surface,
@@ -131,10 +133,9 @@ function DraggableSpace({ space, cell, columns, order, active, editing, onDraggi
               >
                 <View
                   style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
                     alignItems: "center",
-                    marginBottom: 15,
+                    justifyContent: "center",
+                    marginRight: 12,
                   }}
                 >
                   <View
@@ -150,58 +151,53 @@ function DraggableSpace({ space, cell, columns, order, active, editing, onDraggi
                       color={tint}
                     />
                   </View>
-                  <TouchableOpacity
-                    accessibilityLabel={t("update15.favorite")}
-                    style={{ transform: [{ translateY: -16 }] }}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: space.is_favorite }}
-                    hitSlop={10}
-                    disabled={editing}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      void useSpaceStore
-                        .getState()
-                        .updateSpace(space.id, {
-                          is_favorite: !space.is_favorite,
-                        })
-                        .catch((error) =>
-                          showAppDialog(t("update15.error"), String(error)),
-                        );
+                </View>
+                <View style={{ flex: 1, justifyContent: "center" }}>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontFamily: "DMSans_700Bold",
+                      fontSize: 16,
+                      color: colors.textPrimary,
                     }}
                   >
-                    <Ionicons
-                      name={space.is_favorite ? "star" : "star-outline"}
-                      size={20}
-                      color={
-                        space.is_favorite ? "#EAB308" : colors.textTertiary
-                      }
-                    />
-                  </TouchableOpacity>
+                    {space.name}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      marginTop: 3,
+                      fontSize: 12,
+                      color: colors.textSecondary,
+                    }}
+                  >
+                    {space.children?.length
+                      ? t("dashboard.spaceSubLabel", { count: space.children.length })
+                      : t("dashboard.spaceSubDefault")}
+                  </Text>
                 </View>
-                <Text
-                  numberOfLines={2}
-                  style={{
-                    fontFamily: "DMSans_700Bold",
-                    fontSize: 16,
-                    color: colors.textPrimary,
+                <TouchableOpacity
+                  accessibilityLabel={t("update15.favorite")}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: space.is_favorite }}
+                  hitSlop={10}
+                  disabled={editing}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    void useSpaceStore
+                      .getState()
+                      .updateSpace(space.id, { is_favorite: !space.is_favorite })
+                      .catch((error) =>
+                        showAppDialog(t("update15.error"), String(error)),
+                      );
                   }}
                 >
-                  {space.name}
-                </Text>
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginTop: 4,
-                    fontSize: 12,
-                    color: colors.textSecondary,
-                  }}
-                >
-                  {space.children?.length
-                    ? t("dashboard.spaceSubLabel", {
-                        count: space.children.length,
-                      })
-                    : t("dashboard.spaceSubDefault")}
-                </Text>
+                  <Ionicons
+                    name={space.is_favorite ? "star" : "star-outline"}
+                    size={20}
+                    color={space.is_favorite ? "#EAB308" : colors.textTertiary}
+                  />
+                </TouchableOpacity>
               </TouchableOpacity>
       </Animated.View>
     </GestureDetector>

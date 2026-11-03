@@ -5,12 +5,12 @@
 // ─── PALETA ESCURA ────────────────────────────────────────────────────────────
 export const darkColors = {
   // Backgrounds — três camadas com contraste real entre elas
-  background:      '#141312',   // mais fundo que antes; quase preto-quente
-  surface:         '#1D1C1A',   // cards base
-  surfaceElevated: '#252320',   // cards sobre surface (modais, dropdowns)
+  background:      '#191919',
+  surface:         '#252525',
+  surfaceElevated: '#2F2F2F',
 
-  border:          '#2E2C29',   // linha sutil — só usada quando necessário
-  borderStrong:    '#3D3A36',   // separadores com mais peso visual
+  border:          '#383838',
+  borderStrong:    '#484848',
 
   // Texto — três níveis com contraste acessível
   textPrimary:   '#F0EDE8',     // quente, não branco puro
@@ -25,7 +25,7 @@ export const darkColors = {
   primaryText:    '#FFFFFF',
 
   // Acento secundário — azul-ardósia frio, contrasta com o laranja
-  // Dá identidade própria ao Oren; não existe no Claude
+  // Dá identidade própria à aplicação.
   secondary:      '#6E9EE8',    // azul académico / inteligente
   secondarySoft:  '#172030',    // background tint
 
@@ -54,9 +54,9 @@ export const darkColors = {
 
 // ─── PALETA CLARA ─────────────────────────────────────────────────────────────
 export const lightColors = {
-  background:      '#F8FAFC',   // neutro frio, inspirado no Material 3
-  surface:         '#FFFFFF',
-  surfaceElevated: '#F1F3F4',
+  background:      '#FFFFFF',
+  surface:         '#F3F3F3',
+  surfaceElevated: '#F3F3F3',
 
   border:          '#DADCE0',
   borderStrong:    '#BDC1C6',

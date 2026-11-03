@@ -7,6 +7,7 @@ export interface SpaceRow {
   name: string;
   icon: string;
   color: string;
+  google_classroom_course_id: string | null;
   is_favorite: number;
   position: number;
   created_at: string;
@@ -33,13 +34,14 @@ export async function createSpace(
     position = row?.next ?? 0;
   }
   await database.runAsync(
-    `INSERT INTO spaces (id, parent_id, name, icon, color, is_favorite, position, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO spaces (id, parent_id, name, icon, color, google_classroom_course_id, is_favorite, position, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     id,
     data.parent_id ?? null,
     data.name,
     data.icon ?? 'folder-outline',
     data.color ?? 'blue',
+    data.google_classroom_course_id ?? null,
     Number(data.is_favorite ?? false),
     position,
     timestamp,
@@ -49,7 +51,7 @@ export async function createSpace(
 }
 
 export async function updateSpace(id: string, changes: Partial<SpaceRow>): Promise<void> {
-  const fields: (keyof SpaceRow)[] = ['parent_id', 'name', 'icon', 'color', 'is_favorite', 'position'];
+  const fields: (keyof SpaceRow)[] = ['parent_id', 'name', 'icon', 'color', 'google_classroom_course_id', 'is_favorite', 'position'];
   const updates = fields.filter((field) => changes[field] !== undefined);
   if (!updates.length) return;
   const values = updates.map((field) => {

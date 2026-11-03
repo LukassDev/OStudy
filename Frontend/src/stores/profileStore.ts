@@ -14,10 +14,9 @@ interface ProfileState extends LocalProfile {
 
 const defaultProfile: LocalProfile = {
   name: '',
-  goal: null,
   onboarding_completed: false,
   avatar_style: 'initials',
-  theme: 'light',
+  theme: 'dark',
   language: DEFAULT_LANGUAGE,
   language_set_manually: false,
 };
@@ -26,7 +25,7 @@ function normalizeProfile(value: Partial<LocalProfile>): LocalProfile {
   return {
     ...defaultProfile,
     ...value,
-    theme: value.theme === 'dark' ? 'dark' : 'light',
+    theme: value.theme === 'light' ? 'light' : 'dark',
     language: (value.language || DEFAULT_LANGUAGE) as SupportedLanguage,
   };
 }

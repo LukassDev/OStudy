@@ -28,9 +28,12 @@ export async function requestStudyNotifications() {
 }
 let queue = Promise.resolve();
 let requestedSync = 0;
+const NOTIFICATION_PREFIX = 'ostudy-study:';
+const LEGACY_NOTIFICATION_PREFIX = 'oren-study:';
+
 export function syncStudyNotifications(
   lessons: Lesson[],
-  _events: CalendarEvent[],
+  events: CalendarEvent[],
   preferences: StudyPreferences,
 ) {
   const syncVersion = ++requestedSync;
@@ -44,7 +47,8 @@ export function syncStudyNotifications(
       const scheduled = await Notifications.getAllScheduledNotificationsAsync();
       const existing = new Map(
         scheduled
-          .filter((item) => item.identifier.startsWith("oren-study:"))
+          .filter((item) => item.identifier.startsWith(NOTIFICATION_PREFIX)
+            || item.identifier.startsWith(LEGACY_NOTIFICATION_PREFIX))
           .map((item) => [item.identifier, item]),
       );
       if (preferences.reminder_minutes === null || !(await Notifications.getPermissionsAsync()).granted) {
@@ -55,11 +59,10 @@ export function syncStudyNotifications(
         return;
       }
       const offset = preferences.reminder_minutes;
-      // Weekly triggers continue working while the app is closed, without a server.
       const desired = new Set<string>();
       for (const lesson of lessons.slice(0, 50)) {
         if (syncVersion !== requestedSync) return;
-        const identifier = `oren-study:lesson:${lesson.id}`;
+        const identifier = `${NOTIFICATION_PREFIX}lesson:${lesson.id}`;
         desired.add(identifier);
         const [hour, minute] = lesson.start_time.split(":").map(Number);
         const shifted = lesson.weekday * 1440 + hour * 60 + minute - offset;
@@ -81,6 +84,56 @@ export function syncStudyNotifications(
         const sameTrigger = oldTrigger?.weekday === trigger.weekday
           && oldTrigger.hour === trigger.hour
           && oldTrigger.minute === trigger.minute
+          && oldTrigger.channelId === trigger.channelId;
+        if (old && old.content.title === content.title && old.content.body === content.body && sameTrigger) {
+          existing.delete(identifier);
+          continue;
+        }
+        if (old) {
+          await Notifications.cancelScheduledNotificationAsync(identifier);
+          if (syncVersion !== requestedSync) return;
+        }
+        await Notifications.scheduleNotificationAsync({ identifier, content, trigger });
+      }
+      for (const event of events) {
+        if (syncVersion !== requestedSync) return;
+        const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(event.event_date);
+        if (!dateParts) continue;
+        const [, yearText, monthText, dayText] = dateParts;
+        const year = Number(yearText);
+        const month = Number(monthText);
+        const day = Number(dayText);
+        const fireAt = new Date(year, month - 1, day, preferences.event_reminder_hour);
+        if (
+          fireAt.getFullYear() !== year ||
+          fireAt.getMonth() !== month - 1 ||
+          fireAt.getDate() !== day
+        ) continue;
+        fireAt.setMinutes(fireAt.getMinutes() - offset);
+        if (fireAt.getTime() <= Date.now()) continue;
+
+        const identifier = `${NOTIFICATION_PREFIX}event:${event.id}`;
+        desired.add(identifier);
+        const content = {
+          title: event.title,
+          body: `${i18n.t(`calendar.types.${event.type}`)} · ${new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(new Date(year, month - 1, day))}`,
+          data: { route: "/agenda" },
+        };
+        const trigger = {
+          type: Notifications.SchedulableTriggerInputTypes.DATE as const,
+          date: fireAt,
+          channelId: "study",
+        };
+        const old = existing.get(identifier);
+        const oldTrigger = old?.trigger as (typeof trigger & { type?: string }) | undefined;
+        const oldDateValue = oldTrigger?.date;
+        const oldDate = oldDateValue instanceof Date
+          ? oldDateValue.getTime()
+          : typeof oldDateValue === 'number'
+            ? oldDateValue
+            : Number.NaN;
+        const sameTrigger = oldTrigger?.type === trigger.type
+          && oldDate === fireAt.getTime()
           && oldTrigger.channelId === trigger.channelId;
         if (old && old.content.title === content.title && old.content.body === content.body && sameTrigger) {
           existing.delete(identifier);

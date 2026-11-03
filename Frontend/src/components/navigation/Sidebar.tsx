@@ -12,19 +12,15 @@ import {
   UIManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { OrenLogo } from '../common/OrenLogo';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { type Href, usePathname } from 'expo-router';
+import { usePathname } from 'expo-router';
 import { guardedPush } from '../../utils/navigation';
-import { formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useSpaceStore } from '../../stores/spaceStore';
 import { useProfileStore } from '../../stores/profileStore';
-import { useChatStore } from '../../stores/chatStore';
 import { SpaceTree } from './SpaceTree';
 import { Avatar } from '../ui/Avatar';
 import { useThemeColors, useSpaceColorMap } from '../../constants/theme';
-import { useDateFnsLocale } from '../../i18n/dateFnsLocale';
 import { matchesSearchText } from '../../utils/search';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -74,19 +70,15 @@ function SectionHeader({
 export function Sidebar() {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const dateLocale = useDateFnsLocale();
   const { spaces, loading, expandedIds, toggleExpand, fetchSpaces, getFavorites } =
     useSpaceStore();
-  const { recentChats, fetchRecentChats, searchChats } = useChatStore();
   const { name } = useProfileStore();
   const colors = useThemeColors();
   const SPACE_COLOR_MAP = useSpaceColorMap();
   const [search, setSearch] = useState('');
-  const [searchedChats, setSearchedChats] = useState<typeof recentChats>([]);
 
   // Estado de colapso por secção
   const [favoritesOpen, setFavoritesOpen] = useState(false);
-  const [recentsOpen, setRecentsOpen] = useState(false);
   const [spacesOpen, setSpacesOpen] = useState(false);
 
   const toggleSection = (setter: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -96,23 +88,7 @@ export function Sidebar() {
 
   useEffect(() => {
     fetchSpaces();
-    fetchRecentChats(5);
-  }, [fetchSpaces, fetchRecentChats]);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!search.trim()) {
-      setSearchedChats([]);
-      return () => { cancelled = true; };
-    }
-
-    const timeout = setTimeout(() => {
-      searchChats(search).then((results) => {
-        if (!cancelled) setSearchedChats(results);
-      });
-    }, 250);
-    return () => { cancelled = true; clearTimeout(timeout); };
-  }, [search, searchChats]);
+  }, [fetchSpaces]);
 
   const filteredSpaces = useMemo(() => {
     if (!search.trim()) return spaces;
@@ -131,8 +107,6 @@ export function Sidebar() {
     () => (search.trim() ? [] : getFavorites()),
     [search, getFavorites]
   );
-  const visibleChats = search.trim() ? searchedChats : recentChats;
-  const showRecents = visibleChats.length > 0;
 
   const handleSelectSpace = (id: string) => guardedPush(`/(app)/spaces/${id}`);
   const handleNewSpace = () => guardedPush('/(app)/spaces/new');
@@ -142,15 +116,7 @@ export function Sidebar() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.surface }}>
       <View className="px-4 pt-4 pb-3">
         <View className="flex-row items-center justify-between mb-4 ml-2 ">
-          <View className="flex-row items-center">
-            <View
-              className="w-8 h-8 rounded-xl border items-center justify-center mr-2"
-              style={{ backgroundColor: colors.surfaceElevated, borderColor: colors.border }}
-            >
-              <OrenLogo size={40} />
-            </View>
-            <Text className="text-lg font-bold text-textPrimary">{t('sidebar.appName')}</Text>
-          </View>
+          <Text className="text-lg font-bold text-textPrimary">{t('sidebar.appName')}</Text>
         </View>
 
         <View className="flex-row items-center rounded-2xl px-3" style={{ backgroundColor: colors.surfaceElevated }}>
@@ -208,44 +174,6 @@ export function Sidebar() {
                   </TouchableOpacity>
                 );
               })}
-          </View>
-        )}
-
-        {showRecents && (
-          <View className="mb-1">
-            <SectionHeader
-              label={t('sidebar.sections.recentChats')}
-              count={visibleChats.length}
-              expanded={recentsOpen}
-              onToggle={() => toggleSection(setRecentsOpen)}
-            />
-            {recentsOpen &&
-              visibleChats.map((chat) => (
-                <TouchableOpacity
-                  key={chat.id}
-                  className="flex-row items-center py-2.5 px-4"
-                  onPress={() => guardedPush(`/(app)/chats/${chat.id}` as Href)}
-                >
-                  <Ionicons
-                    name="chatbubble-outline"
-                    size={19}
-                    color={colors.textTertiary}
-                    style={{ marginRight: 10 }}
-                  />
-                  <View className="flex-1">
-                    <Text className="text-textPrimary text-sm" numberOfLines={1}>
-                      {chat.title}
-                    </Text>
-                    <Text className="text-textTertiary text-[11px]">
-                      {chat.space?.name} ·{' '}
-                      {formatDistanceToNow(new Date(chat.updated_at), {
-                        locale: dateLocale,
-                        addSuffix: true,
-                      })}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
           </View>
         )}
 
