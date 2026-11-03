@@ -1,87 +1,100 @@
-# OStudy
+# OStudy 2.0.0
 
-OStudy é uma aplicação local-first para organizar o estudo: espaços por disciplina, planos, tópicos, conversas com um tutor de IA, recursos, avaliações e calendário.
+OStudy é um gestor de estudo local-first, pensado para organizar disciplinas, tarefas, calendário, conteúdos e aprendizagem com suporte de IA. A aplicação foi construída em Expo + React Native e já está pronta para Android, iOS e Web, mantendo os dados no dispositivo/navegador e evitando dependência de backend central.
 
-O código da aplicação está em [`Frontend/`](./Frontend/). A aplicação usa Expo e React Native, com suporte a Android, iOS e Web. A interface está disponível em inglês, português (Brasil), espanhol, francês, alemão e italiano.
+A versão atual é 2.0.0 e reúne as principais melhorias do ciclo de produto do app: dashboard mais funcional, gestão de Spaces, sincronização do Google Classroom, tutor de IA mais robusto e melhor suporte para web e exportação de dados.
 
-Este repositório inclui a aplicação em `Frontend/` e esta documentação. A pasta `Web/` do workspace local não faz parte do repositório; as instruções de publicação do site institucional abaixo pressupõem que essa pasta também esteja disponível.
+## Visão geral da app
+
+- Dashboard com resumo rápido de média, próximos eventos e aulas
+- Organização por Spaces e subspaces para cada disciplina ou área de estudo
+- Agenda e calendário para aulas, provas, eventos e tarefas
+- Registo de notas e médias por módulos/disciplinas
+- Chat por Space com tutor de IA, anexos, documentos e geração de quiz/flashcards
+- Recursos do Space com texto, PDFs, ficheiros e pré-visualização de Office
+- Google Classroom opcional para sincronizar tarefas e calendário
+- Dados locais em SQLite com exportação/importação e backup automático
+- Suporte multilíngue: inglês, português, espanhol, francês, alemão e italiano
+
+## Estrutura do projeto
+
+- `Frontend/`: app principal em Expo/React Native
+- `Web/`: site institucional em Next.js e export do app web para Firebase Hosting
+- `builds/`: APK/AAB e artefactos de distribuição
+- `LICENSE`: licença do projeto
 
 ## Requisitos
 
-- Node.js `>=22.13.0 <23` e npm.
-- Android Studio e Android SDK para builds Android locais.
-- macOS e Xcode para builds iOS locais. Também é possível configurar builds na nuvem através do EAS.
-- Uma chave OpenRouter para usar o tutor de IA. O uso de modelos e OCR pode gerar custos na conta OpenRouter.
+- Node.js `>=22.13.0 <23`
+- npm
+- Android Studio + Android SDK para builds Android locais
+- macOS + Xcode para builds iOS locais (ou EAS)
+- Chave OpenRouter para usar o tutor de IA
 
-## Desenvolvimento
+## Como iniciar
+
+No diretório `Frontend/`:
 
 ```powershell
-cd Frontend
 npm ci
 npm start
 ```
 
-Para iniciar a versão Web:
+Para abrir a versão web no Expo:
 
 ```powershell
 npm run web
 ```
 
-Configura a chave OpenRouter nas definições da aplicação. Não é necessário configurar uma chave de API de build nem um backend OStudy para executar as funcionalidades locais.
+A chave OpenRouter deve ser configurada dentro da própria aplicação, em Perfil/Definições. Não é necessário ter backend próprio para usar a maior parte das funcionalidades locais.
 
-## Dados e definições
+## Novidades da 2.0.0
 
-Os dados de estudo e as definições da aplicação são guardados numa base de dados SQLite local, no dispositivo ou navegador. Não existe sincronização automática entre dispositivos. Para transferir os dados, usa **Definições → Dados locais** para exportar a base de dados e importá-la noutro dispositivo; a importação substitui os dados locais existentes.
+A versão atual consolida a nova base de experiência do OStudy:
 
-Os limites do tutor podem ser ajustados em **Perfil → Privacidade e definições → Definições da IA → Limites do tutor**. Apesar do nome da secção, alguns limites também controlam anexos, recursos e pré-visualizações de documentos. Os valores são números inteiros dentro dos intervalos indicados abaixo. As alterações ficam na base SQLite local e só passam para outro dispositivo quando a base é exportada e importada.
+- Dashboard com navegação mais direta e visão geral do estudo
+- Sidebar com pesquisa por Spaces, favoritos e organização em árvore
+- Gestão de Spaces com navegação por tabs: avaliações, calendário, Classroom, chats, conteúdo e recursos
+- Melhor integração entre calendário, aulas, eventos e média geral
+- Tutor de IA mais completo, com contexto local, anexos, OCR, extração de texto e geração de materiais de estudo
+- Suporte de dados e exportação mais confiável para migração entre dispositivos
+- Backup automático e gestão de limites de IA para desempenho e memória
+- Integração opcional com Google Classroom por utilizador
+- Web mais estável, com app em `/app` e site institucional em `/`
 
-### O que cada limite controla
+## Dados locais e privacidade
 
-| Grupo | Limite | Predefinição | Intervalo | Efeito |
-|---|---|---:|---:|---|
-| Tutor IA | Mensagens de histórico do tutor | 40 | 1–200 | Número máximo de mensagens anteriores incluídas no contexto enviado ao tutor. |
-| Tutor IA | Contexto máximo | 18 000 caracteres | 100–1 000 000 | Limita o tamanho do contexto de estudo local formatado para o pedido ao tutor. |
-| Tutor IA | Texto extraído de anexos | 15 000 caracteres | 1–1 000 000 | Limita o texto extraído de cada anexo de texto incluído no contexto do tutor. |
-| Tutor IA | Resposta máxima | 4 096 tokens | 1–32 768 | Máximo de tokens pedidos ao modelo para gerar uma resposta. |
-| Tutor IA | Timeout do pedido | 90 segundos | 1–600 | Tempo máximo de espera por uma resposta do OpenRouter antes de cancelar o pedido. |
-| Anexos do chat | Anexo por mensagem | 15 MiB | 1–100 | Tamanho máximo de cada imagem ou documento anexado a uma mensagem. |
-| Anexos do chat | Anexo guardado na Web | 1 MiB | 1–50 | Limite adicional por anexo na Web; não se aplica ao armazenamento mobile. |
-| Recursos | Ficheiro de recurso | 50 MiB | 1–500 | Tamanho máximo de um ficheiro enviado para os recursos de um Space. |
-| Recursos | Ficheiro de texto na Web | 1 MiB | 1–50 | Limite adicional para recursos de texto na Web. A versão Web só guarda ficheiros de texto. |
-| Recursos | Texto de recurso na Web | 15 000 caracteres | 1–1 000 000 | Tamanho máximo do conteúdo textual de um recurso guardado na Web. |
-| Quizzes e flashcards | Máximo de itens por quiz/flashcards | 30 itens | 1–100 | Número máximo de itens aceites ao interpretar quizzes ou flashcards gerados pelo tutor. |
-| Pré-visualização de documentos | Entradas no arquivo | 10 000 | 1–50 000 | Número máximo de ficheiros internos processados em documentos Office compactados. |
-| Pré-visualização de documentos | Tamanho descomprimido | 120 MiB | 1–1 024 | Tamanho total máximo dos conteúdos descomprimidos num documento Office compactado. |
-| Pré-visualização de documentos | Tamanho máximo do HTML | 24 Mi caracteres | 1–256 | Tamanho máximo do HTML produzido para uma pré-visualização Office. |
-| Pré-visualização de documentos | Folhas de cálculo | 100 | 1–5 000 | Número máximo de folhas de cálculo processadas num ficheiro XLS/XLSX. |
-| Pré-visualização de documentos | Linhas por folha | 5 000 | 1–100 000 | Número máximo de linhas processadas em cada folha de cálculo. |
-| Pré-visualização de documentos | Colunas por folha | 200 | 1–10 000 | Número máximo de colunas processadas em cada folha de cálculo. |
-| Pré-visualização de documentos | Slides por apresentação | 300 | 1–5 000 | Número máximo de slides processados numa apresentação PowerPoint. |
+Os dados de estudo e as definições ficam guardados localmente em SQLite no dispositivo ou browser. Não há sincronização automática entre dispositivos.
 
-Os limites protegem o desempenho e o uso de memória; aumentá-los pode tornar pedidos, carregamentos ou pré-visualizações mais lentos e consumir mais recursos. **Restaurar limites padrão** repõe os valores da coluna “Predefinição”; é necessário guardar para aplicar as alterações.
+Para transferir dados:
 
-A chave OpenRouter é guardada separadamente da base exportada: usa armazenamento seguro no mobile e `localStorage` na Web. Por isso, a chave não é transferida com a base de dados.
+1. Abre **Definições → Dados locais**
+2. Exporta a base
+3. Importa a base noutra instância da app
 
-Backups automáticos são opcionais. No mobile ficam no armazenamento da aplicação; na Web, numa pasta autorizada pelo utilizador, usando um browser compatível. Os backups são verificados enquanto a aplicação está aberta ou regressa ao primeiro plano.
+A importação substitui os dados locais existentes.
 
-## Integração com o Google Classroom (opcional)
+A chave OpenRouter é guardada separadamente da base exportada: no mobile usa armazenamento seguro e na Web usa `localStorage`.
 
-O OStudy pode sincronizar tarefas do Google Classroom para o calendário de um Space usando o próprio Client ID de cada utilizador. Esta opção é 100% local e não exige backend nem conta centralizada da OStudy.
+Os limites do tutor podem ser ajustados em **Perfil → Privacidade e definições → Definições da IA → Limites do tutor**. Eles ajudam a controlar histórico, contexto, anexos, tokens e desempenho geral da IA; o botão **Restaurar limites padrão** repõe os valores iniciais.
 
-### Como configurar
+## Google Classroom (opcional)
 
-1. Cria ou reutiliza um projeto na [Google Cloud Console](https://console.cloud.google.com/).
-2. Ativa a Google Classroom API em **APIs e serviços → Biblioteca**.
-3. Cria um **ID de cliente OAuth** e copia o Client ID gerado.
-4. Nas definições da aplicação, abre **Perfil → Definições da IA** e usa a secção **Google Classroom** para guardar o Client ID.
-5. Toca em **Ligar ao Google Classroom** e aceita o consentimento da conta Google.
-6. Em cada Space, abre **Editar Space** e selecciona a turma correspondente no campo **Turma do Google Classroom**.
+O OStudy pode sincronizar tarefas do Google Classroom para o calendário de um Space usando o Client ID do utilizador. A opção é 100% local e não precisa de backend central.
 
-A sincronização é automática ao abrir a app e pode ser forçada com pull-to-refresh no ecrã da Agenda ou do calendário do Space. Só são lidos dados do Classroom; a app não escreve alterações na conta Google.
+### Configuração rápida
 
-## Build
+1. Cria um projeto na [Google Cloud Console](https://console.cloud.google.com/)
+2. Ativa a Google Classroom API
+3. Cria um ID de cliente OAuth e copia o Client ID
+4. Em **Perfil → Definições da IA**, guarda esse Client ID
+5. Liga a conta Google e selecciona a turma no Space correspondente
 
-Executa estes comandos a partir de `Frontend/`:
+A sincronização é automática ao abrir a app e também pode ser forçada no calendário/agenda.
+
+## Build e publicação
+
+No diretório `Frontend/`:
 
 ```powershell
 npx expo export --platform web
@@ -89,20 +102,20 @@ npx expo export --platform android
 npx expo export --platform ios
 ```
 
-O export Web é escrito em `Frontend/dist/`. Builds nativos também podem ser configurados através do [EAS](./Frontend/eas.json).
+O export web sai para `Frontend/dist/`. Os builds nativos também podem ser configurados via [EAS](./Frontend/eas.json).
 
-Para publicar o site institucional e o app Web juntos no Firebase Hosting, configura o projeto Firebase `ostudyweb`, instala as dependências em `Web/` e `Frontend/` e executa em `Web/`:
+Para publicar o site institucional e o app web juntos no Firebase Hosting, instala as dependências em `Web/` e `Frontend/` e executa no `Web/`:
 
 ```powershell
 npm run build:firebase
 npm run deploy:firebase
 ```
 
-O site institucional fica na raiz e o app Web em `/app`. A publicação requer autenticação no Firebase CLI e a criação do projeto `ostudyweb`.
+O site institucional vive na raiz e o app Web em `/app`. A publicação exige autenticação no Firebase CLI e a criação do projeto `ostudyweb`.
 
-## Testes e verificações
+## Testes e validação
 
-Executa os comandos em `Frontend/`:
+No diretório `Frontend/`:
 
 ```powershell
 npm run test:ai
@@ -118,10 +131,10 @@ npx tsc --noEmit
 
 ## Documentação adicional
 
-- [README do frontend](./Frontend/README.md)
-- [Configuração de autenticação Web](./Frontend/WEB_AUTH.md)
-- [Notas da atualização 1.5](./Frontend/UPDATE_1_5.md)
+- [Web/README.md](./Web/README.md)
+- [LICENSE](./LICENSE)
+- [Frontend/LICENSE](./Frontend/LICENSE)
 
 ## Licença
 
-O projeto é distribuído sob a [PolyForm Noncommercial License 1.0.0](./Frontend/LICENSE). Consulta o ficheiro da licença para os termos completos.
+O projeto é distribuído sob a [MIT License](./LICENSE). Consulta o ficheiro para os termos completos.
