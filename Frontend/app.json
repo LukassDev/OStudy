@@ -1,0 +1,93 @@
+{
+  "expo": {
+    "name": "OStudy",
+    "slug": "ostudy",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/ostudyNewIcon.png",
+    "scheme": "ostudy",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "locales": {
+      "en": "./locales/en.json",
+      "pt-BR": "./locales/pt-BR.json",
+      "es": "./locales/es.json",
+      "fr": "./locales/fr.json",
+      "de": "./locales/de.json",
+      "it": "./locales/it.json"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ostudy.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "OStudy needs access to your gallery so you can attach exercise photos to the chat.",
+        "NSCameraUsageDescription": "OStudy needs access to your camera so you can take exercise photos directly in the chat."
+      }
+    },
+    "android": {
+      "package": "com.ostudy.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#633BB3",
+        "foregroundImage": "./assets/images/ostudyNewIcon.png"
+      },
+      "edgeToEdgeEnabled": false,
+      "softwareKeyboardLayoutMode": "resize",
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/ostudyNewIcon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/ostudyNewIcon.png",
+          "imageWidth": 140,
+          "resizeMode": "contain",
+          "backgroundColor": "#F8FAFC",
+          "dark": {
+            "backgroundColor": "#F8FAFC"
+          }
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "OStudy needs access to your gallery so you can attach exercise photos to the chat.",
+          "cameraPermission": "OStudy needs access to your camera so you can take exercise photos directly in the chat.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-document-picker",
+      "expo-notifications",
+      "expo-sqlite",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "baseUrl": "/app",
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c5c9d848-2f59-4f40-9233-f8f67e0384cd"
+      }
+    },
+    "owner": "buildss"
+  }
+}

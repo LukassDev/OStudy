@@ -1,0 +1,25 @@
+{
+  "hosting": {
+    "site": "ostudyweb",
+    "public": "../Web/.firebase-static/out",
+    "ignore": [
+      "firebase.json",
+      "**/.*"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "i18n": {
+      "root": "/i18n-content"
+    },
+    "rewrites": [
+      {
+        "source": "/app",
+        "destination": "/app/index.html"
+      },
+      {
+        "source": "/app/**",
+        "destination": "/app/index.html"
+      }
+    ]
+  }
+}

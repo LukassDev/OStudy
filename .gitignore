@@ -1,0 +1,25 @@
+# Workspace outputs and content kept outside this repository
+/builds/
+/Web/
+
+# Dependencies and generated output
+**/node_modules/
+**/.expo/
+**/.next/
+**/.firebase/
+**/.firebase-static/
+**/dist/
+**/web-build/
+**/out/
+**/*.tsbuildinfo
+
+# Local credentials and environment files
+**/.env*
+!**/.env.example
+**/*.jks
+**/*.keystore
+**/*.p8
+**/*.p12
+**/*.key
+**/*.pem
+**/*.mobileprovision
