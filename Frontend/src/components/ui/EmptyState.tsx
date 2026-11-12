@@ -24,8 +24,8 @@ export function EmptyState({
   const colors = useThemeColors();
   return (
     <View className="items-center justify-center py-12 px-6">
-      <View className="w-16 h-16 rounded-full bg-primarySoft items-center justify-center mb-4">
-        <Ionicons name={icon} size={28} color={colors.primary} />
+      <View className="w-16 h-16 rounded-full bg-surface items-center justify-center mb-4">
+        <Ionicons name={icon} size={28} color={colors.textSecondary} />
       </View>
       <Text className="text-textPrimary font-semibold text-base text-center">
         {title}
@@ -37,7 +37,7 @@ export function EmptyState({
       ) : null}
       {actionLabel && onAction ? (
         <TouchableOpacity
-          className="mt-5 bg-primary rounded-[12px] py-3 px-6"
+          className="mt-5 bg-primaryStrong rounded-[12px] py-3 px-6"
           onPress={onAction}
           disabled={actionDisabled}
           style={{ opacity: actionDisabled ? 0.5 : 1 }}

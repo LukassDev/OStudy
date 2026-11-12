@@ -110,7 +110,7 @@ export function CalendarTab({ spaceId, readOnly = false }: CalendarTabProps) {
         contentContainerStyle={{ paddingBottom: 24 }}
       >
         <TouchableOpacity
-            className="bg-primary rounded-[12px] py-3 px-4 mx-4 mt-4 mb-2 flex-row items-center justify-center"
+            className="bg-primaryStrong rounded-[12px] py-3 px-4 mx-4 mt-4 mb-2 flex-row items-center justify-center"
             onPress={() => {
               setEditing(null);
               setModalOpen(true);
@@ -118,7 +118,7 @@ export function CalendarTab({ spaceId, readOnly = false }: CalendarTabProps) {
             disabled={readOnly}
             style={{ opacity: readOnly ? 0.5 : 1 }}
           >
-            <Ionicons name="add" size={20} color="#FFFFFF" />
+            <Ionicons name="add" size={20} color={colors.primaryText} />
             <Text className="text-primaryText font-semibold ml-1">
               {t("calendar.newEvent")}
             </Text>
@@ -150,13 +150,13 @@ export function CalendarTab({ spaceId, readOnly = false }: CalendarTabProps) {
                   style={{
                     backgroundColor: urgent
                       ? colors.errorSoft
-                      : colors.primarySoft,
+                      : colors.iconSurface,
                   }}
                 >
                   <Ionicons
                     name={TYPE_ICON[event.type]}
                     size={17}
-                    color={urgent ? colors.error : colors.primary}
+                    color={urgent ? colors.error : colors.textSecondary}
                   />
                 </View>
                 <View className="flex-1">
@@ -304,12 +304,12 @@ function EventModal({
             <TouchableOpacity
               key={typeKey}
               onPress={() => setType(typeKey)}
-              className={`px-4 py-2 rounded-full ${type === typeKey ? "bg-primary" : "bg-surface"}`}
+              className={`px-4 py-2 rounded-full ${type === typeKey ? "bg-border" : "bg-surface"}`}
             >
               <Text
                 className={
                   type === typeKey
-                    ? "text-white text-sm font-medium"
+                    ? "text-textPrimary text-sm font-medium"
                     : "text-textSecondary text-sm"
                 }
               >

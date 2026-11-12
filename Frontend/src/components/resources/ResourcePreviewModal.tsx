@@ -133,9 +133,9 @@ export function ResourcePreviewModal({ resource, onClose }: { resource: Resource
           </Pressable>}
           <Pressable onPress={download} disabled={!url} accessibilityRole="button" accessibilityLabel={t('resources.preview.download')}
             accessibilityState={{ disabled: !url }}
-            style={{ minWidth: 44, height: 44, paddingHorizontal: compact ? 0 : 14, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: colors.primary, opacity: url ? 1 : .45 }}>
-            <Ionicons name="download-outline" size={20} color="#fff" />
-            {!compact && <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>{t('resources.preview.download')}</Text>}
+            style={{ minWidth: 44, height: 44, paddingHorizontal: compact ? 0 : 14, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: colors.primaryStrong, opacity: url ? 1 : .45 }}>
+            <Ionicons name="download-outline" size={20} color={colors.primaryText} />
+            {!compact && <Text style={{ color: colors.primaryText, fontSize: 13, fontWeight: '600' }}>{t('resources.preview.download')}</Text>}
           </Pressable>
         </View>
         {isOffice && showInfo && <Text style={{ paddingHorizontal: 16, paddingVertical: 10, color: colors.textSecondary, fontSize: 12 }}>{t(useMicrosoft ? 'resources.preview.microsoftNote' : 'resources.preview.officeNote')}</Text>}

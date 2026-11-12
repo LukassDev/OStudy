@@ -45,11 +45,11 @@ function getTabs(t: (key: string) => string): { key: Tab; label: string; icon: k
 
 export default function SpaceScreen() {
   const colors = useThemeColors();
+  const palette = useSpaceColorMap();
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { spaces, fetchSpaces, findSpace, getBreadcrumb } = useSpaceStore();
-  const SPACE_COLOR_MAP = useSpaceColorMap();
   const [activeTab, setActiveTab] = useState<Tab>('avaliacoes');
   const tabsScroll = useRef<ScrollView>(null);
   const tabPositions = useRef<Partial<Record<Tab, number>>>({});
@@ -90,7 +90,6 @@ export default function SpaceScreen() {
     );
   }
 
-  const tint = SPACE_COLOR_MAP[space.color] || colors.primary;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -170,8 +169,8 @@ export default function SpaceScreen() {
             </Text>
           )}
           <View style={styles.spaceTitleRow}>
-            <View style={[styles.spaceIconBadge, { backgroundColor: tint }]}>
-              <SpaceIcon name={space.icon || 'folder-outline'} size={16} color="#FFFFFF" />
+            <View style={[styles.spaceIconBadge, { backgroundColor: colors.iconSurface }]}>
+              <SpaceIcon name={space.icon || 'folder-outline'} size={16} color={palette[space.color] || colors.textSecondary} />
             </View>
             <Text
               style={[
@@ -227,7 +226,7 @@ export default function SpaceScreen() {
                 <Ionicons
                   name={tab.icon}
                   size={18}
-                  color={isActive ? colors.primary : colors.textSecondary}
+                  color={colors.textSecondary}
                 />
                 <Text
                   style={[
@@ -331,7 +330,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderBottomWidth: 3,
+    borderBottomWidth: 2,
     borderBottomColor: 'transparent',
     borderTopLeftRadius: 6,
     borderTopRightRadius: 6,

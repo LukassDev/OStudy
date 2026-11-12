@@ -1370,13 +1370,13 @@ export default function ChatThread() {
             style={[
               styles.modeChip,
               {
-                backgroundColor: responseMode === "flash" ? colors.primarySoft : colors.surface,
-                borderColor: responseMode === "flash" ? colors.primary : colors.border,
+                backgroundColor: responseMode === "flash" ? colors.border : colors.surface,
+                borderColor: responseMode === "flash" ? colors.borderStrong : colors.border,
               },
             ]}
           >
-            <Ionicons name="flash-outline" size={14} color={responseMode === "flash" ? colors.primary : colors.textSecondary} />
-            <Text style={[styles.modeChipText, { color: responseMode === "flash" ? colors.primary : colors.textSecondary }]}>
+            <Ionicons name="flash-outline" size={14} color={responseMode === "flash" ? colors.textPrimary : colors.textSecondary} />
+            <Text style={[styles.modeChipText, { color: responseMode === "flash" ? colors.textPrimary : colors.textSecondary }]}>
               {t("chat.mode.flash")}
             </Text>
           </TouchableOpacity>
@@ -1387,13 +1387,13 @@ export default function ChatThread() {
             style={[
               styles.modeChip,
               {
-                backgroundColor: responseMode === "deep" ? colors.primarySoft : colors.surface,
-                borderColor: responseMode === "deep" ? colors.primary : colors.border,
+                backgroundColor: responseMode === "deep" ? colors.border : colors.surface,
+                borderColor: responseMode === "deep" ? colors.borderStrong : colors.border,
               },
             ]}
           >
-            <Ionicons name="bulb-outline" size={14} color={responseMode === "deep" ? colors.primary : colors.textSecondary} />
-            <Text style={[styles.modeChipText, { color: responseMode === "deep" ? colors.primary : colors.textSecondary }]}>
+            <Ionicons name="bulb-outline" size={14} color={responseMode === "deep" ? colors.textPrimary : colors.textSecondary} />
+            <Text style={[styles.modeChipText, { color: responseMode === "deep" ? colors.textPrimary : colors.textSecondary }]}>
               {t("chat.mode.deep")}
             </Text>
           </TouchableOpacity>
@@ -1456,7 +1456,7 @@ export default function ChatThread() {
                 (input.trim() || attachedImages.length > 0 || attachedDocuments.length > 0) &&
                 !isPreparingImage &&
                 !attachedImages.some((image) => image.processing)
-                  ? { backgroundColor: colors.primary }
+                  ? { backgroundColor: colors.primaryStrong }
                   : { backgroundColor: colors.border },
               ]}
               onPress={handleSend}
@@ -1474,7 +1474,7 @@ export default function ChatThread() {
                   (input.trim() || attachedImages.length > 0 || attachedDocuments.length > 0) &&
                   !isPreparingImage &&
                   !attachedImages.some((image) => image.processing)
-                    ? "#FFFFFF"
+                    ? colors.primaryText
                     : colors.textSecondary
                 }
               />
@@ -1696,15 +1696,15 @@ export default function ChatThread() {
             </View>
 
             <TouchableOpacity
-              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+              style={[styles.saveBtn, { backgroundColor: colors.primaryStrong }]}
               onPress={handleRenameChat}
               disabled={isRenaming}
               activeOpacity={0.8}
             >
               {isRenaming ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={colors.primaryText} />
               ) : (
-                <Text style={styles.saveBtnText}>
+                <Text style={[styles.saveBtnText, { color: colors.primaryText }]}>
                   {t("chat.optionsModal.saveNameButton")}
                 </Text>
               )}

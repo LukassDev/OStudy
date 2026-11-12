@@ -112,12 +112,16 @@ function themeVariables(theme: typeof lightColors | (typeof darkColors & { accen
     '--color-surface': toRgb(theme.surface),
     '--color-surfaceElevated': toRgb(theme.surfaceElevated),
     '--color-border': toRgb(theme.border),
+    '--color-iconSurface': toRgb(theme.iconSurface),
     '--color-textPrimary': toRgb(theme.textPrimary),
     '--color-textSecondary': toRgb(theme.textSecondary),
     '--color-textTertiary': toRgb(theme.textTertiary),
     '--color-primary': toRgb(theme.primary),
+    '--color-primaryStrong': toRgb(theme.primaryStrong),
+    '--color-primaryHover': toRgb(theme.primaryHover),
     '--color-primaryPressed': toRgb(theme.primaryPressed),
-    '--color-primarySoft': toRgb(theme.primarySoft),
+    '--color-primarySoft': theme.primarySoft,
+    '--color-primaryBorder': theme.primaryBorder,
     '--color-primaryText': toRgb(theme.primaryText),
     '--color-accent': toRgb(theme.accent),
     '--color-success': toRgb(theme.success),
@@ -126,6 +130,7 @@ function themeVariables(theme: typeof lightColors | (typeof darkColors & { accen
     '--color-errorSoft': toRgb(theme.errorSoft),
     '--color-warning': toRgb(theme.warning),
     '--color-warningSoft': toRgb(theme.warningSoft),
+    '--color-info': toRgb(theme.info),
   });
 }
 

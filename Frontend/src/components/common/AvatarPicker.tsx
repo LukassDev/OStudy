@@ -21,7 +21,7 @@ export function AvatarPicker({ name, value, onChange }: { name: string; value: s
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {(expanded ? options : initialOptions).map((option, index) => (
             <TouchableOpacity key={option.id} accessibilityRole="radio" accessibilityState={{ checked: selectedId === option.id }} accessibilityLabel={option.label || 'Avatar ' + (index + 1)} onPress={() => onChange(option.id)} style={{ width: '33.333%', alignItems: 'center', paddingVertical: 8 }}>
-              <View style={{ padding: 4, borderWidth: 2, borderRadius: 40, borderColor: selectedId === option.id ? colors.primary : 'transparent' }}>
+              <View style={{ padding: 4, borderWidth: 2, borderRadius: 40, borderColor: selectedId === option.id ? colors.borderStrong : 'transparent' }}>
                 <GeneratedAvatar name={name || '?'} size={56} avatarStyle={option.id} />
               </View>
               {option.label ? <Text style={{ color: colors.textSecondary, fontSize: 11 }}>{option.label}</Text> : null}

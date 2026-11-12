@@ -45,7 +45,7 @@ function DraggableSpace({ space, cell, columns, order, active, editing, onDraggi
   const { t } = useTranslation();
   const colors = useThemeColors();
   const palette = useSpaceColorMap();
-  const tint = palette[space.color] || colors.primary;
+  const iconColor = palette[space.color] || colors.textSecondary;
   const start = useSharedValue(0);
   const before = useSharedValue<string[]>([]);
   const x = useSharedValue(0);
@@ -126,9 +126,9 @@ function DraggableSpace({ space, cell, columns, order, active, editing, onDraggi
                   paddingVertical: 10,
                   borderRadius: 16,
                   overflow: "hidden",
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceElevated,
                   borderWidth: 1,
-                  borderColor: editing ? colors.primary : "transparent",
+                  borderColor: editing ? colors.border : "transparent",
                 }}
               >
                 <View
@@ -140,7 +140,7 @@ function DraggableSpace({ space, cell, columns, order, active, editing, onDraggi
                 >
                   <View
                     style={{
-                      backgroundColor: tint + "20",
+                      backgroundColor: colors.iconSurface,
                       padding: 10,
                       borderRadius: 12,
                     }}
@@ -148,7 +148,7 @@ function DraggableSpace({ space, cell, columns, order, active, editing, onDraggi
                     <SpaceIcon
                       name={space.icon || "folder-outline"}
                       size={22}
-                      color={tint}
+                      color={iconColor}
                     />
                   </View>
                 </View>

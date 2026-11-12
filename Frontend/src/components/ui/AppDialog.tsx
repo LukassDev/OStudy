@@ -224,7 +224,7 @@ export function AppDialogHost() {
                       !isActionSheet && { flex: 1 },
                       {
                         backgroundColor: primary
-                          ? colors.primary
+                          ? colors.primaryStrong
                           : destructive
                             ? isActionSheet
                               ? colors.errorSoft
@@ -246,10 +246,10 @@ export function AppDialogHost() {
                       style={[
                         styles.actionText,
                         {
-                          color: primary || (destructive && !isActionSheet)
+                          color: primary
                             ? colors.primaryText
                             : destructive
-                              ? colors.error
+                              ? isActionSheet ? colors.error : '#FFFFFF'
                               : colors.textPrimary,
                         },
                       ]}

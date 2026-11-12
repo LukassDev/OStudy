@@ -5,37 +5,44 @@
 // ─── PALETA ESCURA ────────────────────────────────────────────────────────────
 export const darkColors = {
   // Backgrounds — três camadas com contraste real entre elas
-  background:      '#191919',
-  surface:         '#252525',
-  surfaceElevated: '#2F2F2F',
+  background:      '#151515',
+  surface:         '#1E1E1E',
+  surfaceElevated: '#262626',
 
-  border:          '#383838',
-  borderStrong:    '#484848',
+  border:          '#333333',
+  borderStrong:    '#3D3D3D',
+  iconSurface:     '#2E2E2E',
 
   // Texto — três níveis com contraste acessível
-  textPrimary:   '#F0EDE8',     // quente, não branco puro
-  textSecondary: '#9B9590',     // conteúdo secundário
-  textTertiary:  '#6A665F',     // labels, timestamps, placeholders
+  textPrimary:   '#F5F5F5',
+  textSecondary: '#A3A3A3',
+  textTertiary:  '#737373',     // labels, timestamps, placeholders
 
-  // Acento principal — o laranja "Claude-inspired" com identidade própria
-  // Ligeiramente mais saturado e quente que o original para ter mais presença
-  primary:        '#E07B50',    // o acento — usado com moderação
-  primaryPressed: '#C9623A',    // estado pressed
-  primarySoft:    '#2C1E17',    // background tint (usar só em badges/chips)
-  primaryText:    '#FFFFFF',
+  // Acento teal-menta e respetivos estados de interação.
+  primary:        '#4FA98F',
+  primaryStrong:  '#2F8F76',
+  primaryHover:   '#63BBA1',
+  primaryPressed: '#287B66',
+  primarySoft:    'rgba(79, 169, 143, 0.10)',
+  primaryBorder:  'rgba(79, 169, 143, 0.28)',
+  primaryText:    '#F5F5F5',
+  accent:         '#4FA98F',
 
-  // Acento secundário — azul-ardósia frio, contrasta com o laranja
+  // Acento secundário — azul-ardósia frio.
   // Dá identidade própria à aplicação.
   secondary:      '#6E9EE8',    // azul académico / inteligente
   secondarySoft:  '#172030',    // background tint
 
   // Semânticas
-  success:     '#3DB060',
+  success:     '#22C55E',
   successSoft: '#162618',
-  error:       '#E85252',
+  error:       '#F87171',
   errorSoft:   '#2E1616',
-  warning:     '#D49A2A',
+  warning:     '#F5B544',
   warningSoft: '#2A2010',
+  info:        '#60A5FA',
+  destructive: '#C25B5B',
+  destructiveSoft: 'rgba(194, 91, 91, 0.08)',
 
   overlay: 'rgba(0,0,0,0.6)',
   ripple: 'rgba(255,255,255,0.16)',
@@ -44,7 +51,7 @@ export const darkColors = {
   space: {
     blue:   '#6EA8F0',
     green:  '#3CC97A',
-    orange: '#E07B50',   // alinhado com o primary
+    orange: '#E07B50',
     purple: '#9B84F5',
     pink:   '#E86FAD',
     red:    '#E86060',
@@ -60,16 +67,20 @@ export const lightColors = {
 
   border:          '#DADCE0',
   borderStrong:    '#BDC1C6',
+  iconSurface:     '#E8E8E8',
 
   textPrimary:   '#202124',
   textSecondary: '#5F6368',
   textTertiary:  '#80868B',
 
-  primary:        '#E07B50',
-  primaryPressed: '#C9623A',
-  primarySoft:    '#FCE9DF',
-  primaryText:    '#FFFFFF',
-  accent:         '#E07B50',
+  primary:        '#4FA98F',
+  primaryStrong:  '#2F8F76',
+  primaryHover:   '#63BBA1',
+  primaryPressed: '#287B66',
+  primarySoft:    'rgba(79, 169, 143, 0.10)',
+  primaryBorder:  'rgba(79, 169, 143, 0.28)',
+  primaryText:    '#F5F5F5',
+  accent:         '#4FA98F',
 
   secondary:      '#34A853',
   secondarySoft:  '#E6F4EA',
@@ -80,6 +91,9 @@ export const lightColors = {
   errorSoft:   '#FCE8E6',
   warning:     '#F9AB00',
   warningSoft: '#FEF7E0',
+  info:        '#60A5FA',
+  destructive: '#C25B5B',
+  destructiveSoft: 'rgba(194, 91, 91, 0.08)',
 
   overlay: 'rgba(32,33,36,0.4)',
   ripple: 'rgba(32,33,36,0.12)',
@@ -209,11 +223,11 @@ export const shadows = {
   },
   // Para o botão CTA primário
   cta: {
-    shadowColor:   '#E07B50',
+    shadowColor:   '#4FA98F',
     shadowOffset:  { width: 0, height: 4 },
-    shadowOpacity: 0.30,
-    shadowRadius:  10,
-    elevation:     6,
+    shadowOpacity: 0,
+    shadowRadius:  0,
+    elevation:     0,
   },
 };
 

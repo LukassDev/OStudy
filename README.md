@@ -10,6 +10,7 @@ A versão atual é 2.0.0 e reúne as principais melhorias do ciclo de produto do
 - Organização por Spaces e subspaces para cada disciplina ou área de estudo
 - Agenda e calendário para aulas, provas, eventos e tarefas
 - Registo de notas e médias por módulos/disciplinas
+- Critérios por módulo, com pesos predefinidos para testes, fichas, apresentações e outros trabalhos, e médias de comportamento e participação
 - Chat por Space com tutor de IA, anexos, documentos e geração de quiz/flashcards
 - Recursos do Space com texto, PDFs, ficheiros e pré-visualização de Office
 - Google Classroom opcional para sincronizar tarefas e calendário
@@ -120,6 +121,8 @@ No diretório `Frontend/`:
 ```powershell
 npm run test:ai
 npm run test:db
+npm run test:import
+npm run test:grades
 npm run test:math
 npm run test:tutor
 npm run test:tutor-local
@@ -132,6 +135,7 @@ npx tsc --noEmit
 ## Documentação adicional
 
 - [Web/README.md](./Web/README.md)
+- [Cálculo das médias por módulo](./Frontend/docs/grade-calculation.md)
 - [LICENSE](./LICENSE)
 - [Frontend/LICENSE](./Frontend/LICENSE)
 

@@ -79,7 +79,7 @@ export function ConfirmModal({
   }, [visible]);
 
   const accent =
-    variant === 'danger' ? colors.error : variant === 'warning' ? colors.warning : colors.primary;
+    variant === 'danger' ? colors.error : variant === 'warning' ? colors.warning : colors.primaryStrong;
   const accentSoft =
     variant === 'danger' ? colors.errorSoft : variant === 'warning' ? colors.warningSoft : colors.primarySoft;
 
@@ -226,7 +226,7 @@ export function ConfirmModal({
                   opacity: confirmDisabled ? 0.5 : 1,
                 }}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>
+                <Text style={{ color: variant === 'default' ? colors.primaryText : '#FFFFFF', fontWeight: '700', fontSize: 15 }}>
                   {loading ? 'A processar…' : remainingSeconds > 0 ? `${confirmLabel} (${remainingSeconds}s)` : confirmLabel}
                 </Text>
               </TouchableOpacity>

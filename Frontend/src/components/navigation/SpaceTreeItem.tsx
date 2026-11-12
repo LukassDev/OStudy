@@ -3,7 +3,7 @@ import { SpaceIcon } from '../spaces/SpaceIcon';
 import { View, Text, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Space } from '../../stores/spaceStore';
-import { useThemeColors } from '../../constants/theme';
+import { useSpaceColorMap, useThemeColors } from '../../constants/theme';
 
 interface SpaceTreeItemProps {
   space: Space;
@@ -14,6 +14,7 @@ interface SpaceTreeItemProps {
 
 export function SpaceTreeItem({space, level, onPress, onLongPress }: SpaceTreeItemProps) {
   const colors = useThemeColors();
+  const palette = useSpaceColorMap();
   const [expanded, setExpanded] = useState(false);
   const hasChildren = space.children && space.children.length > 0;
 
@@ -46,7 +47,7 @@ export function SpaceTreeItem({space, level, onPress, onLongPress }: SpaceTreeIt
           <SpaceIcon
             name={space.icon || 'folder-outline'}
             size={20}
-            color={colors.textSecondary}
+            color={palette[space.color] || colors.textSecondary}
             style={{ marginRight: 8 }}
           />
           <Text className="text-textPrimary text-base flex-1" numberOfLines={1}>

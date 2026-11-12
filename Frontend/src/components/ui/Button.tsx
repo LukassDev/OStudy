@@ -1,7 +1,8 @@
 // src/components/ui/Button.tsx
-import { TouchableOpacity, Text, ActivityIndicator, ViewStyle } from 'react-native';
+import { Pressable, Text, ActivityIndicator, ViewStyle } from 'react-native';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { useThemeColors, shadows, typography } from '../../constants/theme';
+import { useThemeColors, typography } from '../../constants/theme';
 
 interface ButtonProps {
   title: string;
@@ -27,20 +28,22 @@ export function Button({
   icon,
 }: ButtonProps) {
   const colors = useThemeColors();
+  const [hovered, setHovered] = useState(false);
+  const blocked = !!disabled || !!loading;
 
   // Backgrounds por variante
   const bgStyle =
-    variant === 'primary'   ? { backgroundColor: colors.primary, ...shadows.cta } :
+    variant === 'primary'   ? { backgroundColor: colors.primaryStrong } :
     variant === 'danger'    ? { backgroundColor: colors.error } :
-    variant === 'secondary' ? { backgroundColor: colors.secondary } :
-    variant === 'outline'   ? { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.border } :
+    variant === 'secondary' || variant === 'outline'
+                           ? { backgroundColor: colors.surfaceElevated, borderWidth: 1, borderColor: colors.border } :
                               { backgroundColor: 'transparent' };
 
   // Cor do texto por variante
   const textColor =
-    variant === 'outline' || variant === 'ghost'
+    variant === 'outline' || variant === 'ghost' || variant === 'secondary'
       ? colors.textPrimary
-      : '#FFFFFF';
+      : variant === 'primary' ? colors.primaryText : '#FFFFFF';
 
   // Padding e altura por size
   const paddingStyle =
@@ -54,11 +57,14 @@ export function Button({
     16;
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.82}
-      style={[
+      accessibilityRole="button"
+      accessibilityState={{ disabled: blocked, busy: !!loading }}
+      disabled={blocked}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
+      style={({ pressed }) => [
         {
           borderRadius: 12,
           alignItems: 'center',
@@ -71,11 +77,16 @@ export function Button({
           ...bgStyle,
         },
         style,
+        variant === 'primary' && !blocked && (pressed || hovered) && {
+          backgroundColor: pressed ? colors.primaryPressed : colors.primaryStrong,
+          opacity: pressed ? 1 : 0.92,
+        },
+        variant !== 'primary' && pressed && !blocked && { opacity: 0.82 },
       ]}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'outline' || variant === 'ghost' ? colors.textPrimary : '#FFFFFF'}
+          color={textColor}
           size="small"
         />
       ) : (
@@ -93,6 +104,6 @@ export function Button({
         </Text>
         </>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }

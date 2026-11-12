@@ -67,6 +67,48 @@ function SettingsDisclosure({ title, expanded, onToggle, children }: React.Props
   </View>;
 }
 
+function DataActionButton({ title, description, icon, onPress, disabled, destructive = false }: {
+  title: string;
+  description?: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+  disabled: boolean;
+  destructive?: boolean;
+}) {
+  const colors = useThemeColors();
+  const tint = destructive ? colors.destructive : colors.textPrimary;
+  return <Pressable
+    onPress={onPress}
+    disabled={disabled}
+    accessibilityRole="button"
+    accessibilityLabel={title}
+    accessibilityHint={description}
+    accessibilityState={{ disabled }}
+    style={({ pressed }) => ({
+      width: '100%',
+      minHeight: 56,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: destructive ? colors.destructive : colors.border,
+      backgroundColor: destructive ? colors.destructiveSoft : colors.surfaceElevated,
+      opacity: disabled ? 0.5 : pressed ? 0.75 : 1,
+    })}
+  >
+    <View style={{ width: 24, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
+      <Ionicons name={icon} size={22} color={destructive ? colors.destructive : colors.textSecondary} />
+    </View>
+    <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+      <Text style={{ color: tint, fontSize: 14, lineHeight: 20, fontWeight: '600', flexShrink: 1 }}>{title}</Text>
+      {description && <Text style={{ color: colors.textSecondary, fontSize: 12, lineHeight: 18, flexShrink: 1 }}>{description}</Text>}
+    </View>
+  </Pressable>;
+}
+
 function formatBackupTime(timestamp: string, locale: string, todayLabel: string, yesterdayLabel: string): string {
   const date = new Date(timestamp);
   const today = new Date();
@@ -446,7 +488,7 @@ export function ProfileAppSettings() {
         <Ionicons
           name={welcomeEnabled ? 'checkmark-circle' : 'ellipse-outline'}
           size={24}
-          color={welcomeEnabled ? colors.primary : colors.textTertiary}
+          color={welcomeEnabled ? colors.textPrimary : colors.textTertiary}
         />
       </Pressable>
     </SettingsSection>
@@ -548,8 +590,8 @@ export function ProfileAppSettings() {
             accessibilityLabel="Copiar SHA-1"
             style={{ minHeight: 36, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8 }}
           >
-            <Ionicons name={classroomSha1Copied ? 'checkmark' : 'copy-outline'} size={16} color={classroomSha1Copied ? '#22C55E' : colors.primary} />
-            <Text style={{ color: classroomSha1Copied ? '#22C55E' : colors.primary, fontSize: 12, fontWeight: '600' }}>
+            <Ionicons name={classroomSha1Copied ? 'checkmark' : 'copy-outline'} size={16} color={classroomSha1Copied ? colors.success : colors.textSecondary} />
+            <Text style={{ color: classroomSha1Copied ? colors.success : colors.textPrimary, fontSize: 12, fontWeight: '600' }}>
               {classroomSha1Copied ? 'Copiado' : 'Copiar'}
             </Text>
           </Pressable>
@@ -628,11 +670,11 @@ export function ProfileAppSettings() {
                   justifyContent: 'center',
                   borderRadius: 999,
                   borderWidth: 1,
-                  borderColor: autoBackupInterval === interval ? colors.primary : colors.border,
-                  backgroundColor: autoBackupInterval === interval ? colors.primarySoft : 'transparent',
+                  borderColor: autoBackupInterval === interval ? colors.borderStrong : colors.border,
+                  backgroundColor: autoBackupInterval === interval ? colors.border : 'transparent',
                   paddingHorizontal: 12,
                 }}>
-                <Text style={{ color: autoBackupInterval === interval ? colors.primary : colors.textSecondary, fontSize: 13, fontWeight: '600' }}>
+                <Text style={{ color: autoBackupInterval === interval ? colors.textPrimary : colors.textSecondary, fontSize: 13, fontWeight: '600' }}>
                   {interval < 24
                     ? t('profile.appSettings.data.intervalHours', { count: interval })
                     : interval === 24 ? t('profile.appSettings.data.daily') : t('profile.appSettings.data.weekly')}
@@ -663,19 +705,19 @@ export function ProfileAppSettings() {
               )}
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 <Pressable onPress={() => void backupNow()} disabled={backupBusy} accessibilityRole="button"
-                      style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.primary }}>
-                  <Ionicons name="download-outline" size={18} color={colors.primary} />
-                  <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.backupNow')}</Text>
+                      style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceElevated }}>
+                  <Ionicons name="download-outline" size={18} color={colors.textSecondary} />
+                  <Text style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.backupNow')}</Text>
                 </Pressable>
                 {Platform.OS === 'web' && (
                   <Pressable onPress={() => void enableAutomaticBackup()} disabled={backupBusy || !supportsWebBackups} accessibilityRole="button"
-                    style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.primary, opacity: backupBusy ? 0.5 : 1 }}>
-                    <Ionicons name="folder-open-outline" size={18} color={colors.primary} />
-                    <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.changeFolder')}</Text>
+                    style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceElevated, opacity: backupBusy ? 0.5 : 1 }}>
+                    <Ionicons name="folder-open-outline" size={18} color={colors.textSecondary} />
+                    <Text style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.changeFolder')}</Text>
                   </Pressable>
                 )}
                 <Pressable onPress={() => void turnOffAutomaticBackup()} disabled={backupBusy} accessibilityRole="button"
-                  style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.primary }}>
+                  style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceElevated }}>
                   <Ionicons name="pause-circle-outline" size={18} color={colors.textSecondary} />
                   <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600' }}>{t('profile.appSettings.data.deactivate')}</Text>
                 </Pressable>
@@ -693,7 +735,7 @@ export function ProfileAppSettings() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 alignSelf: 'flex-start',
-                backgroundColor: colors.primary,
+                backgroundColor: colors.primaryStrong,
                 opacity: backupBusy || !supportsWebBackups ? 0.5 : pressed ? 0.86 : 1,
               })}>
               <Text style={{ color: colors.primaryText, fontSize: 14, fontWeight: '600' }}>
@@ -705,68 +747,31 @@ export function ProfileAppSettings() {
           )}
         </View>
 
-        <View style={{ padding: 16, gap: 8, borderRadius: 12, backgroundColor: colors.surface }}>
+        <View style={{ padding: 16, gap: 12, borderRadius: 12, backgroundColor: colors.surface }}>
           <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', marginBottom: 2 }}>{t('profile.appSettings.data.yourData')}</Text>
-          <Pressable onPress={() => void exportData()} disabled={busy} accessibilityRole="button"
-            style={({ pressed, hovered }) => ({
-              minHeight: 56,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              borderRadius: 8,
-              borderWidth: 0,
-              borderColor: colors.primary,
-              paddingHorizontal: 10,
-              backgroundColor: pressed || hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
-              opacity: busy ? 0.5 : 1,
-            })}>
-            <Ionicons name="download-outline" size={20} color={colors.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600' }}>{t('profile.appSettings.data.exportTitle')}</Text>
-              <Text style={{ color: colors.textTertiary, fontSize: 12 }}>{t('profile.appSettings.data.exportDescription')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-          </Pressable>
-          <Pressable onPress={() => void importData()} disabled={busy} accessibilityRole="button"
-            style={({ pressed, hovered }) => ({
-              minHeight: 56,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              borderRadius: 8,
-              borderWidth: 0,
-              borderColor: colors.primary,
-              paddingHorizontal: 10,
-              backgroundColor: pressed || hovered ? 'rgba(255,255,255,0.06)' : 'transparent',
-              opacity: busy ? 0.5 : 1,
-            })}>
-            <Ionicons name="enter-outline" size={20} color={colors.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600' }}>{t('profile.appSettings.data.importTitle')}</Text>
-              <Text style={{ color: colors.textTertiary, fontSize: 12 }}>{t('profile.appSettings.data.importDescription')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-          </Pressable>
-        </View>
-
-        <View style={{ padding: 16, paddingTop: 24, gap: 12, borderTopWidth: 1, borderColor: colors.border }}>
-          <Text style={{ color: colors.error, fontSize: 14, fontWeight: '600' }}>{t('profile.appSettings.data.dangerZone')}</Text>
-          <Pressable onPress={() => setDeleteConfirmationVisible(true)} disabled={busy} accessibilityRole="button"
-            style={({ pressed }) => ({
-              minHeight: 44,
-              alignSelf: 'flex-start',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: colors.error,
-              paddingHorizontal: 16,
-              opacity: busy ? 0.5 : pressed ? 0.7 : 1,
-            })}>
-            <Ionicons name="trash-outline" size={18} color={colors.error} />
-            <Text style={{ color: colors.error, fontSize: 14, fontWeight: '600' }}>{t('profile.appSettings.data.deleteAll')}</Text>
-          </Pressable>
+          <DataActionButton
+            title={t('profile.appSettings.data.exportTitle')}
+            description={t('profile.appSettings.data.exportDescription')}
+            icon="download-outline"
+            onPress={() => void exportData()}
+            disabled={busy}
+          />
+          <DataActionButton
+            title={t('profile.appSettings.data.importTitle')}
+            description={t('profile.appSettings.data.importDescription')}
+            icon="enter-outline"
+            onPress={() => void importData()}
+            disabled={busy}
+          />
+          <View style={{ marginTop: 8 }}>
+            <DataActionButton
+              title={t('profile.appSettings.data.deleteAll')}
+              icon="trash-outline"
+              onPress={() => setDeleteConfirmationVisible(true)}
+              disabled={busy}
+              destructive
+            />
+          </View>
         </View>
       </View>
     </SettingsSection>

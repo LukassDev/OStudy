@@ -164,19 +164,19 @@ export function ResourcesTab({ spaceId, readOnly = false }: ResourcesTabProps) {
       >
         <View className="flex-row gap-3 mt-4 mb-1" style={{ width: '100%', maxWidth: 440, alignSelf: 'center', paddingHorizontal: 16 }}>
           <TouchableOpacity
-            className={`flex-1 rounded-[12px] py-3 items-center flex-row justify-center bg-primary`}
+            className={`flex-1 rounded-[12px] py-3 items-center flex-row justify-center bg-primaryStrong`}
             onPress={handlePickFile}
             disabled={uploading || readOnly}
             style={{ opacity: readOnly ? 0.5 : 1 }}
           >
             {uploading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color={colors.primaryText} size="small" />
             ) : (
               <>
                 <Ionicons
                   name="cloud-upload-outline"
                   size={18}
-                  color="#FFFFFF"
+                  color={colors.primaryText}
                 />
                 <Text
                   className={`font-semibold ml-1.5 text-sm text-primaryText`}
@@ -223,11 +223,11 @@ export function ResourcesTab({ spaceId, readOnly = false }: ResourcesTabProps) {
             onPress={() => handleOpen(resource)}
             onLongPress={readOnly ? undefined : () => handleDelete(resource)}
           >
-            <View className="w-9 h-9 rounded-[12px] bg-primarySoft items-center justify-center mr-3">
+            <View className="w-9 h-9 rounded-[12px] bg-iconSurface items-center justify-center mr-3">
               <Ionicons
                 name={TYPE_ICON[resource.type]}
                 size={17}
-                color={colors.primary}
+                color={colors.textSecondary}
               />
             </View>
             <View className="flex-1">

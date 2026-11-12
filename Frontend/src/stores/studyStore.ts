@@ -4,7 +4,8 @@ import type { CalendarEvent } from './calendarStore';
 import {
   listAllCalendarEvents,
 } from '../db/repositories/calendar.repo';
-import { listAllGrades } from '../db/repositories/grades.repo';
+import { listAllGrades, listGradeModules } from '../db/repositories/grades.repo';
+import { subjectAverage, subjectIncludesEstimates, type GradeModule } from '../utils/gradeAverages';
 import {
   deleteLesson as removeLesson,
   getStudyPreferences,
@@ -38,26 +39,18 @@ export const defaultPreferences: StudyPreferences = {
   event_reminder_hour: 9,
 };
 
-export function moduleAverages(grades: Grade[], ids: string[], scale: number) {
-  return ids.map((id) => {
-    const rows = grades.filter((grade) => grade.space_id === id && grade.max_score > 0 && grade.weight > 0);
-    const weight = rows.reduce((sum, grade) => sum + Number(grade.weight), 0);
-    return {
-      id,
-      average: weight
-        ? rows.reduce(
-          (sum, grade) => sum + (Number(grade.score) / Number(grade.max_score)) * Number(grade.weight),
-          0,
-        ) / weight * scale
-        : null,
-    };
-  });
+export function moduleAverages(grades: Grade[], ids: string[], scale: number, modules: GradeModule[] = []) {
+  return [...new Set(ids)].map(id => ({ id, average: subjectAverage(grades, modules, id, scale) }));
 }
 
-export function overallAverage(grades: Grade[], preferences: StudyPreferences) {
-  const values = moduleAverages(grades, preferences.grade_space_ids, preferences.average_scale)
+export function overallAverage(grades: Grade[], preferences: StudyPreferences, modules: GradeModule[] = []) {
+  const values = moduleAverages(grades, preferences.grade_space_ids, preferences.average_scale, modules)
     .flatMap((module) => module.average === null ? [] : [module.average]);
   return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+}
+
+export function overallIncludesEstimates(grades: Grade[], preferences: StudyPreferences, modules: GradeModule[] = []) {
+  return preferences.grade_space_ids.some(id => subjectIncludesEstimates(grades, modules, id));
 }
 
 export type StudySection = 'lessons' | 'preferences' | 'events' | 'grades';
@@ -72,6 +65,7 @@ interface StudyState {
   retryLessons: () => void;
   events: CalendarEvent[];
   grades: Grade[];
+  gradeModules: GradeModule[];
   lessons: Lesson[];
   preferences: StudyPreferences;
   loading: boolean;
@@ -111,6 +105,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   },
   events: [],
   grades: [],
+  gradeModules: [],
   lessons: [],
   preferences: defaultPreferences,
   loading: false,
@@ -123,7 +118,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
     clearTimeout(preferenceTimer);
     lessonQueue = Promise.resolve();
     set({
-      lessonSyncError: false, events: [], grades: [], lessons: [],
+      lessonSyncError: false, events: [], grades: [], gradeModules: [], lessons: [],
       preferences: defaultPreferences, loading: false, hydrated: false, error: null,
     });
   },
@@ -144,7 +139,8 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         if (section === 'lessons') return [section, await listLessons()] as const;
         if (section === 'preferences') return [section, await getStudyPreferences(defaultPreferences)] as const;
         if (section === 'events') return [section, await listAllCalendarEvents()] as const;
-        return [section, await listAllGrades()] as const;
+        const [grades, modules] = await Promise.all([listAllGrades(), listGradeModules()]);
+        return [section, { grades, modules }] as const;
       }));
       if (epoch !== loadEpoch) return;
       for (const [section, value] of results) {
@@ -152,7 +148,10 @@ export const useStudyStore = create<StudyState>((set, get) => ({
         if (section === 'lessons') set({ lessons: value as Lesson[] });
         else if (section === 'preferences') set({ preferences: { ...defaultPreferences, ...(value as Partial<StudyPreferences>) } });
         else if (section === 'events') set({ events: value as CalendarEvent[] });
-        else set({ grades: value as Grade[] });
+        else {
+          const data = value as { grades: Grade[]; modules: GradeModule[] };
+          set({ grades: data.grades, gradeModules: data.modules });
+        }
       }
       updateHydration(set);
       syncNotificationsIfReady(get);

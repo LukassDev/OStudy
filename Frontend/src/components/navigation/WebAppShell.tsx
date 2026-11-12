@@ -109,7 +109,7 @@ export function WebAppShell({ children }: { children: ReactNode }) {
         />}
         {open && <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0,
           width: sidebarWidth, paddingTop: 48, borderRightWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, zIndex: 2 }}>
-          <Sidebar />
+          <Sidebar onNavigate={() => setOpen(false)} />
         </View>}
       </View>
     </View>

@@ -57,7 +57,7 @@ const CardShell: React.FC<{ children: React.ReactNode; colors: any; title: strin
     }}
   >
     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-      <Ionicons name={icon as any} size={16} color={colors.primary} style={{ marginRight: 6 }} />
+      <Ionicons name={icon as any} size={16} color={colors.textSecondary} style={{ marginRight: 6 }} />
       <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textPrimary }}>{title}</Text>
     </View>
     {children}
@@ -230,9 +230,9 @@ const QuizView: React.FC<{
         )}
         <TouchableOpacity
           onPress={handleRestart}
-          style={{ backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: 10, alignItems: 'center' }}
+          style={{ backgroundColor: colors.primaryStrong, borderRadius: radius.md, paddingVertical: 10, alignItems: 'center' }}
         >
-          <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>{t('chat.quiz.restart')}</Text>
+          <Text style={{ color: colors.primaryText, fontWeight: '600', fontSize: 13 }}>{t('chat.quiz.restart')}</Text>
         </TouchableOpacity>
       </CardShell>
     );
@@ -257,7 +257,8 @@ const QuizView: React.FC<{
         } else if (checked && isSelected && !isCorrectOpt) {
           borderColor = '#EF4444'; bgColor = '#EF44441A';
         } else if (isSelected) {
-          borderColor = colors.primary;
+          borderColor = colors.borderStrong;
+          bgColor = colors.border;
         }
         return (
           <TouchableOpacity
@@ -280,9 +281,9 @@ const QuizView: React.FC<{
       <TouchableOpacity
         onPress={checked ? handleNext : handleCheck}
         disabled={selected === null}
-        style={{ backgroundColor: selected === null ? colors.border : colors.primary, borderRadius: radius.md, paddingVertical: 10, alignItems: 'center' }}
+        style={{ backgroundColor: selected === null ? colors.border : colors.primaryStrong, borderRadius: radius.md, paddingVertical: 10, alignItems: 'center' }}
       >
-        <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>
+        <Text style={{ color: selected === null ? colors.textTertiary : colors.primaryText, fontWeight: '600', fontSize: 13 }}>
           {checked ? (isLast ? t('chat.quiz.finish') : t('chat.quiz.nextQuestion')) : t('chat.quiz.checkAnswer')}
         </Text>
       </TouchableOpacity>
@@ -351,9 +352,9 @@ const FlashcardsView: React.FC<{
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleNext}
-          style={{ flex: 1, borderRadius: radius.md, backgroundColor: colors.primary, paddingVertical: 9, alignItems: 'center' }}
+          style={{ flex: 1, borderRadius: radius.md, backgroundColor: colors.primaryStrong, paddingVertical: 9, alignItems: 'center' }}
         >
-          <Text style={{ fontSize: 13, color: '#fff', fontWeight: '600' }}>{t('chat.quiz.nextQuestion')}</Text>
+          <Text style={{ fontSize: 13, color: colors.primaryText, fontWeight: '600' }}>{t('chat.quiz.nextQuestion')}</Text>
         </TouchableOpacity>
       </View>
     </CardShell>

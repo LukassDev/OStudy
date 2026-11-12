@@ -56,14 +56,14 @@ export function StudyNotificationSettings({ onClose }: { onClose: () => void }) 
         paddingHorizontal: 14,
         paddingVertical: 10,
         borderRadius: 100,
-        backgroundColor: selected ? colors.primarySoft : colors.surface,
+        backgroundColor: selected ? colors.border : colors.surface,
         borderWidth: 1,
-        borderColor: selected ? colors.primary : colors.border,
+        borderColor: selected ? colors.borderStrong : colors.border,
       }}
     >
       <Text
         style={{
-          color: selected ? colors.primary : colors.textSecondary,
+          color: selected ? colors.textPrimary : colors.textSecondary,
           fontFamily: "DMSans_500Medium",
           fontSize: 12,
         }}

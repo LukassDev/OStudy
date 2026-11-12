@@ -139,7 +139,7 @@ export default function Dashboard() {
           <MetricStat icon="folder-outline" value={String(totalSpaces)} label={t('dashboard.stats.spaces')} colors={colors} />
         </View>
 
-        <View style={[styles.searchContainer, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: colors.textPrimary }]}
@@ -206,8 +206,8 @@ export default function Dashboard() {
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                 <Text style={[styles.sectionTitle, { color: colors.textPrimary, flex: 1 }]}>{t('studyVisual.editSpaces')}</Text>
                 <TouchableOpacity accessibilityRole="button" disabled={draggingSpace} onPress={closeSpaceEditor}
-                  style={{ padding: 12, borderRadius: 20, backgroundColor: colors.primary, opacity: draggingSpace ? 0.5 : 1 }}>
-                  <Text style={[styles.sectionAction, { color: '#FFFFFF' }]}>{t('studyVisual.finishEditing')}</Text>
+                  style={{ padding: 12, borderRadius: 20, backgroundColor: colors.primaryStrong, opacity: draggingSpace ? 0.5 : 1 }}>
+                  <Text style={[styles.sectionAction, { color: colors.primaryText }]}>{t('studyVisual.finishEditing')}</Text>
                 </TouchableOpacity>
               </View>
               <Text style={{ color: colors.textSecondary, fontFamily: 'DMSans_400Regular', fontSize: 13 }}>{t('studyVisual.dragSpacesHint')}</Text>

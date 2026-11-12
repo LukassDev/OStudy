@@ -235,11 +235,11 @@ export function ClassroomFeed() {
                 onPress={() => setSelectedCourseId(course.id)}
                 style={[
                   styles.chip,
-                  { borderColor: selected ? colors.primary : colors.border },
-                  selected && { backgroundColor: colors.primarySoft },
+                  { borderColor: selected ? colors.borderStrong : colors.border },
+                  selected && { backgroundColor: colors.border },
                 ]}
               >
-                <Text numberOfLines={1} style={[styles.chipText, { color: selected ? colors.primary : colors.textSecondary }]}>{course.name}</Text>
+                <Text numberOfLines={1} style={[styles.chipText, { color: selected ? colors.textPrimary : colors.textSecondary }]}>{course.name}</Text>
               </Pressable>
             );
           })}

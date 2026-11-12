@@ -187,10 +187,10 @@ export default function Onboarding() {
                 style={[
                   styles.languageOption,
                   { backgroundColor: colors.surface, borderColor: colors.border },
-                  language === option.code && { backgroundColor: colors.primary, borderColor: colors.primary },
+                  language === option.code && { backgroundColor: colors.border, borderColor: colors.borderStrong },
                 ]}
               >
-                <Text style={[styles.languageText, { color: colors.textSecondary }, language === option.code && styles.selectedText]}>
+                <Text style={[styles.languageText, { color: colors.textSecondary }, language === option.code && [styles.selectedText, { color: colors.textPrimary }]]}>
                   {option.nativeName}
                 </Text>
               </TouchableOpacity>
@@ -211,14 +211,13 @@ export default function Onboarding() {
                   onPress={() => handleThemeSelect(theme)}
                   style={[
                     styles.themeOption,
-                    { backgroundColor: colors.surface, borderColor: colors.border },
-                    selected && { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+                    { borderBottomColor: selected ? colors.primary : 'transparent' },
                   ]}
                 >
                   <Ionicons
                     name={theme === 'dark' ? 'moon-outline' : 'sunny-outline'}
                     size={21}
-                    color={selected ? colors.primary : colors.textSecondary}
+                    color={colors.textSecondary}
                   />
                   <Text style={[styles.themeText, { color: selected ? colors.primary : colors.textPrimary }]}>
                     {theme === 'dark' ? t('onboarding.dark') : t('onboarding.light')}
@@ -232,7 +231,7 @@ export default function Onboarding() {
             title={t('onboarding.startLabel')}
             onPress={handleComplete}
             loading={loading}
-            style={[styles.startButton, { backgroundColor: colors.primary }]}
+            style={[styles.startButton, { backgroundColor: colors.primaryStrong }]}
           />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -291,8 +290,8 @@ const styles = StyleSheet.create({
   themeOption: {
     flex: 1,
     minHeight: 48,
-    borderWidth: 1,
-    borderRadius: 14,
+    borderBottomWidth: 2,
+    borderRadius: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

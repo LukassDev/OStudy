@@ -104,8 +104,8 @@ export default function Profile() {
               style={styles.avatarTouchable}
             >
               <GeneratedAvatar name={editName || '?'} size={98} avatarStyle={selectedAvatar} />
-              <View style={[styles.editBadge, { backgroundColor: colors.primary, borderColor: colors.background }]}>
-                <Ionicons name="pencil" size={12} color="#FFFFFF" />
+              <View style={[styles.editBadge, { backgroundColor: colors.iconSurface, borderColor: colors.background }]}>
+                <Ionicons name="pencil" size={12} color={colors.textSecondary} />
               </View>
             </TouchableOpacity>
 
@@ -143,7 +143,7 @@ export default function Profile() {
               title={t('profile.saveChanges')}
               onPress={handleSave}
               loading={saving}
-              style={[styles.saveButton, { backgroundColor: colors.primary }]}
+              style={[styles.saveButton, { backgroundColor: colors.primaryStrong }]}
             />
           </View>
 
@@ -154,11 +154,10 @@ export default function Profile() {
               onPress={() => handleThemeChange('light')}
               style={[
                 styles.themeOption,
-                { borderColor: colors.border },
-                theme === 'light' && { borderColor: colors.primary },
+                { borderBottomColor: theme === 'light' ? colors.primary : 'transparent' },
               ]}
             >
-              <Ionicons name="sunny-outline" size={18} color={theme === 'light' ? colors.primary : colors.textSecondary} />
+              <Ionicons name="sunny-outline" size={18} color={colors.textSecondary} />
               <Text style={[styles.themeOptionLabel, { color: theme === 'light' ? colors.primary : colors.textSecondary }]}>
                 {t('profile.theme.light')}
               </Text>
@@ -167,11 +166,10 @@ export default function Profile() {
               onPress={() => handleThemeChange('dark')}
               style={[
                 styles.themeOption,
-                { borderColor: colors.border },
-                theme === 'dark' && { borderColor: colors.primary },
+                { borderBottomColor: theme === 'dark' ? colors.primary : 'transparent' },
               ]}
             >
-              <Ionicons name="moon-outline" size={18} color={theme === 'dark' ? colors.primary : colors.textSecondary} />
+              <Ionicons name="moon-outline" size={18} color={colors.textSecondary} />
               <Text style={[styles.themeOptionLabel, { color: theme === 'dark' ? colors.primary : colors.textSecondary }]}>
                 {t('profile.theme.dark')}
               </Text>
@@ -211,7 +209,7 @@ export default function Profile() {
                         {opt.nativeName}
                       </Text>
                     </View>
-                    {opt.code === language && <Ionicons name="checkmark" size={17} color={colors.primary} />}
+                    {opt.code === language && <Ionicons name="checkmark" size={17} color={colors.textSecondary} />}
                   </TouchableOpacity>
                 ))}
               </View>
@@ -334,8 +332,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 13,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    borderRadius: 0,
+    borderBottomWidth: 2,
   },
   themeOptionLabel: {
     fontFamily: 'DMSans_600SemiBold',

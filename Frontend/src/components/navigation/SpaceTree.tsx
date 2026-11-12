@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Space } from '../../stores/spaceStore';
-import { useThemeColors, useSpaceColorMap } from '../../constants/theme';
+import { useSpaceColorMap, useThemeColors } from '../../constants/theme';
 
 interface SpaceTreeProps {
   space: Space;
@@ -11,6 +11,7 @@ interface SpaceTreeProps {
   expandedIds: Set<string>;
   toggleExpand: (id: string) => void;
   onSelectSpace: (id: string) => void;
+  selectedSpaceId?: string | null;
 }
 
 export function SpaceTree({
@@ -19,16 +20,19 @@ export function SpaceTree({
   expandedIds,
   toggleExpand,
   onSelectSpace,
+  selectedSpaceId,
 }: SpaceTreeProps) {
   const colors = useThemeColors();
-  const SPACE_COLOR_MAP = useSpaceColorMap();
+  const palette = useSpaceColorMap();
   const hasChildren = !!(space.children && space.children.length > 0);
   const isExpanded = expandedIds.has(space.id);
-  const tint = SPACE_COLOR_MAP[space.color] || colors.textSecondary;
+  const selected = selectedSpaceId === space.id;
 
   return (
     <View>
       <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected }}
         onPress={() => onSelectSpace(space.id)}
         className="flex-row items-center py-2.5 px-4 active:bg-surfaceElevated rounded-xl"
         style={{ paddingLeft: 16 + level * 18 }}
@@ -45,19 +49,14 @@ export function SpaceTree({
           <View style={{ width: 14, marginRight: 6 }} />
         )}
 
-        {/* Círculo do ícone: fundo sólido na cor do space + ícone branco.
-            Antes era fundo em 12.5% de opacidade com ícone na mesma cor
-            (baixo contraste, quase impercetível em vários tons). Fundo
-            sólido + branco garante legibilidade em qualquer cor do
-            SPACE_COLOR_MAP, em claro e escuro. */}
         <View
           className="w-8 h-8 rounded-full items-center justify-center mr-2.5"
-          style={{ backgroundColor: tint }}
+          style={{ backgroundColor: colors.iconSurface }}
         >
-          <SpaceIcon name={space.icon || 'folder-outline'} size={16} color="#FFFFFF" />
+          <SpaceIcon name={space.icon || 'folder-outline'} size={16} color={palette[space.color] || colors.textSecondary} />
         </View>
 
-        <Text className="flex-1 text-textPrimary text-sm" numberOfLines={1}>
+        <Text className="flex-1 text-sm" numberOfLines={1} style={{ color: colors.textPrimary }}>
           {space.name}
         </Text>
 
@@ -74,6 +73,7 @@ export function SpaceTree({
               expandedIds={expandedIds}
               toggleExpand={toggleExpand}
               onSelectSpace={onSelectSpace}
+              selectedSpaceId={selectedSpaceId}
             />
           ))}
         </View>

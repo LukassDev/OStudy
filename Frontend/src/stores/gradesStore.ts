@@ -5,8 +5,12 @@ import {
   deleteGrade as removeGrade,
   listGrades,
   updateGrade as persistGrade,
+  listGradeModules,
+  saveGradeModule as persistModule,
+  deleteGradeModule as removeModule,
 } from '../db/repositories/grades.repo';
 import { useStudyStore } from './studyStore';
+import { subjectAverage, type GradeModule, type AssessmentType, type QualitativeGrade } from '../utils/gradeAverages';
 
 export interface Grade {
   id: string;
@@ -15,6 +19,9 @@ export interface Grade {
   score: number;
   max_score: number;
   weight: number;
+  module_id?: string | null;
+  category_id?: AssessmentType | null;
+  qualitative_value?: QualitativeGrade | null;
   topic_id: string | null;
   graded_at: string;
   created_at?: string;
@@ -24,6 +31,9 @@ export interface Grade {
 interface GradesState {
   loadedSpaceId: string | null;
   grades: Grade[];
+  modules: GradeModule[];
+  saveModule: (module: GradeModule) => Promise<void>;
+  deleteModule: (id: string, spaceId: string) => Promise<void>;
   loading: boolean;
   averageScale: number;
   setAverageScale: (scale: number) => void;
@@ -39,6 +49,7 @@ let fetchVersion = 0;
 export const useGradesStore = create<GradesState>((set, get) => ({
   loadedSpaceId: null,
   grades: [],
+  modules: [],
   loading: false,
   averageScale: 20,
 
@@ -52,15 +63,17 @@ export const useGradesStore = create<GradesState>((set, get) => ({
 
   fetchGrades: async (spaceId) => {
     const version = ++fetchVersion;
-    if (get().loadedSpaceId !== spaceId) set({ grades: [], loadedSpaceId: null });
+    if (get().loadedSpaceId !== spaceId) set({ grades: [], modules: [], loadedSpaceId: null });
     set({ loading: get().loadedSpaceId !== spaceId });
     try {
-      const [grades, averageScale] = await Promise.all([
+      const [grades, averageScale, modules] = await Promise.all([
         listGrades(spaceId),
         getSetting('grades.averageScale', 20),
+        listGradeModules(spaceId),
       ]);
       if (version === fetchVersion) set({
         grades,
+        modules,
         averageScale: Number.isFinite(averageScale) && averageScale > 0 ? averageScale : 20,
         loadedSpaceId: spaceId,
         loading: false,
@@ -70,6 +83,16 @@ export const useGradesStore = create<GradesState>((set, get) => ({
       if (version === fetchVersion) set({ loading: false });
       throw error;
     }
+  },
+
+  saveModule: async (module) => {
+    await persistModule(module);
+    await Promise.all([get().fetchGrades(module.space_id), useStudyStore.getState().load(true, ['grades'])]);
+  },
+
+  deleteModule: async (id, spaceId) => {
+    await removeModule(id, spaceId);
+    await Promise.all([get().fetchGrades(spaceId), useStudyStore.getState().load(true, ['grades'])]);
   },
 
   createGrade: async (data) => {
@@ -97,13 +120,7 @@ export const useGradesStore = create<GradesState>((set, get) => ({
   },
 
   weightedAverage: () => {
-    const { grades, averageScale } = get();
-    if (!grades.length) return null;
-    const totalWeight = grades.reduce((sum, grade) => sum + grade.weight, 0);
-    if (!totalWeight) return null;
-    return grades.reduce(
-      (sum, grade) => sum + (grade.score / grade.max_score) * averageScale * grade.weight,
-      0,
-    ) / totalWeight;
+    const { grades, modules, averageScale, loadedSpaceId } = get();
+    return loadedSpaceId ? subjectAverage(grades, modules, loadedSpaceId, averageScale) : null;
   },
 }));

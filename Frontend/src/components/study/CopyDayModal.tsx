@@ -23,8 +23,8 @@ export function CopyDayModal({ weekday, onClose }: { weekday: number; onClose: (
         {[1, 2, 3, 4, 5, 6, 0].filter(n => n !== weekday).map(n => <TouchableOpacity key={n}
           accessibilityLabel={dayName(n)} accessibilityState={{ selected: days.includes(n) }}
           onPress={() => setDays(current => current.includes(n) ? current.filter(d => d !== n) : [...current, n])}
-          className={`px-4 py-2 rounded-full ${days.includes(n) ? 'bg-primary' : 'bg-surface'}`}>
-          <Text className={days.includes(n) ? 'text-white' : 'text-textSecondary'}>{dayName(n).slice(0, 3)}</Text>
+          className={`px-4 py-2 rounded-full ${days.includes(n) ? 'bg-border' : 'bg-surface'}`}>
+          <Text className={days.includes(n) ? 'text-textPrimary' : 'text-textSecondary'}>{dayName(n).slice(0, 3)}</Text>
         </TouchableOpacity>)}
       </View>
       <Text className="text-textSecondary mb-4">{t('scheduleQuick.copyCount', { count: rows.length })}</Text>

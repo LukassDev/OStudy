@@ -138,8 +138,8 @@ export function LessonModal({ lesson, spaces, onClose, onSave, onDelete }: {
         <View className="flex-row flex-wrap gap-2 mb-4">
           {[1, 2, 3, 4, 5, 6, 0].map(n => (
             <TouchableOpacity key={n} disabled={saving} onPress={() => setDays(current => lesson.id ? [n] : current.includes(n) ? current.filter(d => d !== n) : [...current, n])} accessibilityState={{ selected: days.includes(n) }} accessibilityLabel={day(n)}
-              className={`px-4 py-2 rounded-full ${days.includes(n) ? 'bg-primary' : 'bg-surface'}`}>
-              <Text className={days.includes(n) ? 'text-white text-sm font-medium' : 'text-textSecondary text-sm'}>{day(n).slice(0, 3)}</Text>
+              className={`px-4 py-2 rounded-full ${days.includes(n) ? 'bg-border' : 'bg-surface'}`}>
+              <Text className={days.includes(n) ? 'text-textPrimary text-sm font-medium' : 'text-textSecondary text-sm'}>{day(n).slice(0, 3)}</Text>
             </TouchableOpacity>
           ))}
         </View>

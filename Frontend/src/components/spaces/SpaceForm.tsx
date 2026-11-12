@@ -16,7 +16,7 @@ import { useSpaceStore, Space } from '../../stores/spaceStore';
 import { Button } from '../ui/Button';
 import { ErrorBanner } from '../ui/ErrorBanner';
 import { showAppDialog } from '../ui/AppDialog';
-import { SPACE_COLOR_MAP, useThemeColors } from '../../constants/theme';
+import { SPACE_COLOR_MAP, useSpaceColorMap, useThemeColors } from '../../constants/theme';
 
 import { SPACE_ICONS } from '../../utils/spaceIcons';
 import { SpaceIcon } from './SpaceIcon';
@@ -35,6 +35,7 @@ interface SpaceFormProps {
 
 export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormProps) {
   const colors = useThemeColors();
+  const palette = useSpaceColorMap();
   const { t } = useTranslation();
   const { createSpace, updateSpace, deleteSpace, countDescendants } = useSpaceStore();
 
@@ -89,7 +90,7 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
     return () => { active = false; };
   }, [loadClassroomCourses]));
 
-  const activeColorHex = SPACE_COLOR_MAP[color] || colors.primary;
+  const activeColorHex = palette[color] || colors.primary;
   // No web o formulário é compactado para caber todo no modal, sem scroll.
   // No nativo (iOS/Android) mantém-se o layout original.
   const compact = Platform.OS === 'web';
@@ -189,7 +190,7 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
             className={compact ? 'h-10 w-10 items-center justify-center rounded-lg' : 'mb-1 h-14 w-14 items-center justify-center rounded-xl'}
             style={{ backgroundColor: activeColorHex }}
           >
-            <SpaceIcon name={icon} size={compact ? 20 : 28} color="#FFFFFF" />
+            <SpaceIcon name={icon} size={compact ? 20 : 28} color={activeColorHex === colors.primary ? colors.primaryText : '#FFFFFF'} />
           </View>
           <View style={compact ? { flexShrink: 1 } : { alignItems: 'center' }}>
             <Text
@@ -259,7 +260,7 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
                       <SpaceIcon
                         name={i}
                         size={compact ? 16 : 22}
-                        color={isSelected ? '#FFFFFF' : colors.textSecondary}
+                        color={isSelected ? (activeColorHex === colors.primary ? colors.primaryText : '#FFFFFF') : colors.textSecondary}
                       />
                     </TouchableOpacity>
                   );
@@ -279,7 +280,7 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
           >
             {COLOR_KEYS.map((c) => {
               const isSelected = color === c;
-              const hex = SPACE_COLOR_MAP[c];
+              const hex = palette[c];
               return (
                 <TouchableOpacity
                   key={c}
@@ -293,7 +294,7 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
                     transform: [{ scale: isSelected ? 1.08 : 1 }],
                   }}
                 >
-                  {isSelected && <Ionicons name="checkmark" size={compact ? 12 : 16} color="#FFFFFF" />}
+                  {isSelected && <Ionicons name="checkmark" size={compact ? 12 : 16} color={hex === colors.primary ? colors.primaryText : '#FFFFFF'} />}
                 </TouchableOpacity>
               );
             })}
@@ -394,9 +395,9 @@ export function SpaceForm({ mode, initial, defaultParentId = null }: SpaceFormPr
                         activeOpacity={0.8}
                         className="my-1 rounded-lg px-3 py-2.5"
                         style={{
-                          backgroundColor: selected ? colors.primarySoft : colors.background,
-                          borderWidth: selected ? 1 : 0,
-                          borderColor: selected ? colors.primary : 'transparent',
+                          backgroundColor: 'transparent',
+                          borderBottomWidth: 2,
+                          borderBottomColor: selected ? colors.primary : 'transparent',
                         }}
                       >
                         <Text style={{ color: selected ? colors.primary : colors.textPrimary, fontWeight: '600' }}>

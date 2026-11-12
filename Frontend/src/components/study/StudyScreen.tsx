@@ -7,6 +7,7 @@ import { Button } from "../ui/Button";
 import { EmptyState } from "../ui/EmptyState";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  AppState,
   View,
   Text,
   ScrollView,
@@ -14,17 +15,20 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import {
   useStudyStore,
   moduleAverages,
   overallAverage,
+  overallIncludesEstimates,
   Lesson,
 } from "../../stores/studyStore";
 import { useSpaceStore, Space } from "../../stores/spaceStore";
 import { useThemeColors } from "../../constants/theme";
 import { guardedPush } from "../../utils/navigation";
+import { subjectModuleAverages, subjectIncludesEstimates } from '../../utils/gradeAverages';
 
 export const flattenSpaces = (spaces: Space[]): Space[] =>
   spaces.flatMap((s) => [s, ...flattenSpaces(s.children || [])]);
@@ -56,6 +60,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
     lessons: mode === 'agenda' && (tab === 'schedule' || schedulePrepared) ? s.lessons : emptyLessons,
     events: mode === 'agenda' && tab === 'calendar' ? s.events : emptyEvents,
     grades: mode === 'grades' ? s.grades : emptyGrades,
+    gradeModules: s.gradeModules,
     preferences: s.preferences, error: s.error, lessonSyncError: s.lessonSyncError,
     load: s.load, saveLessons: s.saveLessons, updateLesson: s.updateLesson,
     deleteLesson: s.deleteLesson, queuePreferences: s.queuePreferences, retryLessons: s.retryLessons,
@@ -74,7 +79,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
   const fixedCalendar = splitCalendar && mode !== 'grades' && tab === 'calendar';
   const fixedSchedule = mode === 'agenda' && tab === 'schedule';
   const EventListContainer = splitCalendar ? ScrollView : View;
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => format(new Date(), 'yyyy-MM-dd'));
   const [filter, setFilter] = useState<string | null>(null);
   const [editor, setEditor] = useState<Lesson | null>(null);
   const busy = false;
@@ -86,6 +91,19 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
+  useFocusEffect(useCallback(() => {
+    if (mode !== 'agenda' || tab !== 'calendar') return;
+    const selectToday = () => {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      setSelectedDate(today);
+      setMonth(today.slice(0, 7));
+    };
+    selectToday();
+    const subscription = AppState.addEventListener('change', state => {
+      if (state === 'active') selectToday();
+    });
+    return () => subscription.remove();
+  }, [mode, tab]));
   useEffect(() => {
     void fetchSpaces();
     return () => { void useStudyStore.getState().flushPreferences(); };
@@ -110,7 +128,8 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
     await state.deleteLesson(lesson.id);
     setEditor(null);
   };
-  const average = overallAverage(state.grades, state.preferences);
+  const average = overallAverage(state.grades, state.preferences, state.gradeModules);
+  const estimatedAverage = overallIncludesEstimates(state.grades, state.preferences, state.gradeModules);
   const selectedEvents = state.events.filter(
     (e) => e.event_date.startsWith(month) && (!filter || e.space_id === filter),
   );
@@ -140,14 +159,14 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
         paddingHorizontal: 14,
         paddingVertical: 10,
         borderRadius: 100,
-        backgroundColor: selected ? colors.primarySoft : colors.surface,
+        backgroundColor: selected ? colors.border : colors.surface,
         borderWidth: 1,
-        borderColor: selected ? colors.primary : colors.border,
+        borderColor: selected ? colors.borderStrong : colors.border,
       }}
     >
       <Text
         style={{
-          color: selected ? colors.primary : colors.textSecondary,
+          color: selected ? colors.textPrimary : colors.textSecondary,
           fontFamily: "DMSans_500Medium",
           fontSize: 12,
         }}
@@ -269,8 +288,10 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                   flex: 1,
                   alignItems: "center",
                   paddingVertical: 11,
-                  borderRadius: 100,
-                  backgroundColor: selected ? colors.primary : "transparent",
+                  borderRadius: 0,
+                  borderBottomWidth: 2,
+                  borderBottomColor: selected ? colors.primary : 'transparent',
+                  backgroundColor: 'transparent',
                 }}
               >
                 <Text
@@ -278,7 +299,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                   style={{
                     fontFamily: "DMSans_500Medium",
                     fontSize: 12,
-                    color: selected ? "#fff" : colors.textSecondary,
+                    color: selected ? colors.primary : colors.textSecondary,
                   }}
                 >
                   {t(
@@ -315,7 +336,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
               <View
                 style={[
                   panel,
-                  { backgroundColor: colors.primarySoft, padding: 22 },
+                  { backgroundColor: colors.surfaceElevated, padding: 22 },
                 ]}
               >
                 <View
@@ -323,10 +344,10 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                 >
                   <Ionicons
                     name="school-outline"
-                    color={colors.primary}
+                    color={colors.textSecondary}
                     size={20}
                   />
-                  <Text style={[heading, { color: colors.primary }]}>
+                  <Text style={[heading, { color: colors.textPrimary }]}>
                     {t("studyVisual.globalAverage")}
                   </Text>
                 </View>
@@ -357,7 +378,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                         textAlign: 'center',
                       }}
                     >
-                      {average.toFixed(2)}
+                      {estimatedAverage ? '≈ ' : ''}{average.toFixed(2)}
                     </Text>
                   )}
                   <Text style={[muted, { fontSize: 18 }]}>
@@ -365,6 +386,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                     / {state.preferences.average_scale}
                   </Text>
                 </View>
+              {estimatedAverage && <Text style={[muted, { marginTop: 8 }]}>{t('grades.qualitative.includesEstimates')}</Text>}
               {average === null && (
                 <Text style={[muted, { marginTop: 8, lineHeight: 20 }]}>
                   {t("studyVisual.chooseModules")}
@@ -412,6 +434,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                 state.grades,
                 [space.id],
                 state.preferences.average_scale,
+                state.gradeModules,
               )[0].average;
               return (
                 <TouchableOpacity
@@ -439,22 +462,27 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                   <Ionicons
                     name={checked ? "checkbox" : "square-outline"}
                     size={23}
-                    color={checked ? colors.primary : colors.textTertiary}
+                    color={checked ? colors.textPrimary : colors.textTertiary}
                   />
-                  <Text
-                    numberOfLines={2}
-                    style={[heading, { flex: 1, fontSize: 15 }]}
-                  >
-                    {space.name}
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <TouchableOpacity onPress={() => guardedPush(`/(app)/spaces/${space.id}`)} accessibilityRole="link">
+                      <Text numberOfLines={2} style={[heading, { fontSize: 15 }]}>{space.name}</Text>
+                    </TouchableOpacity>
+                    {subjectModuleAverages(state.grades, state.gradeModules, space.id, state.preferences.average_scale).map(module => (
+                      <Text key={module.id} style={[muted, { fontSize: 12, marginTop: 5 }]}>
+                        {module.name}: {module.average === null ? '—' : `${module.estimated ? '≈ ' : ''}${module.average.toFixed(2)}`}
+                        {!module.complete ? ` · ${t('grades.modules.provisional')}` : ''}
+                      </Text>
+                    ))}
+                  </View>
                   <Text
                     style={{
-                      color: checked ? colors.primary : colors.textSecondary,
+                      color: checked ? colors.textPrimary : colors.textSecondary,
                       fontFamily: "DMSans_700Bold",
                       fontSize: 18,
                     }}
                   >
-                    {avg === null ? "—" : avg.toFixed(1)}
+                    {avg === null ? "—" : `${subjectIncludesEstimates(state.grades, state.gradeModules, space.id) ? '≈ ' : ''}${avg.toFixed(2)}`}
                   </Text>
                 </TouchableOpacity>
               );
@@ -552,16 +580,13 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                             borderRadius: 12,
                             backgroundColor:
                               selectedDate === date
-                                ? colors.primary
+                                ? colors.border
                                 : "transparent",
                           }}
                         >
                           <Text
                             style={{
-                              color:
-                                selectedDate === date
-                                  ? "#fff"
-                                  : colors.textPrimary,
+                              color: colors.textPrimary,
                               fontFamily: "DMSans_500Medium",
                             }}
                           >
@@ -575,8 +600,8 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                               marginTop: 3,
                               backgroundColor: hasEvents
                                 ? selectedDate === date
-                                  ? "#fff"
-                                  : colors.primary
+                                  ? colors.textPrimary
+                                  : colors.textSecondary
                                 : "transparent",
                             }}
                           />
@@ -612,7 +637,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
               >
                 <View
                   style={{
-                    backgroundColor: colors.primarySoft,
+                    backgroundColor: colors.iconSurface,
                     width: 48,
                     paddingVertical: 10,
                     borderRadius: 12,
@@ -621,7 +646,7 @@ export function StudyScreen({ mode }: { mode: "agenda" | "grades" }) {
                 >
                   <Text
                     style={{
-                      color: colors.primary,
+                      color: colors.textSecondary,
                       fontFamily: "DMSans_700Bold",
                       fontSize: 22,
                     }}

@@ -148,8 +148,8 @@ export function ChatList({ spaceId, readOnly = false }: ChatListProps) {
           <TouchableOpacity accessibilityRole="button" onPress={handleNewChat} disabled={readOnly}
             style={{ minWidth: Platform.OS === 'web' ? 180 : 140, minHeight: 52, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 14,
               flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-              backgroundColor: colors.primary, opacity: readOnly ? 0.5 : 1 }}>
-            <Ionicons name="add" size={24} color="#FFFFFF" />
+              backgroundColor: colors.primaryStrong, opacity: readOnly ? 0.5 : 1 }}>
+            <Ionicons name="add" size={24} color={colors.primaryText} />
             <Text style={{ color: colors.primaryText, fontFamily: 'DMSans_700Bold', fontSize: 16 }}>{t('chatList.newChat')}</Text>
           </TouchableOpacity>
         </View>

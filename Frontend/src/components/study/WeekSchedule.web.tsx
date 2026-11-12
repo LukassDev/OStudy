@@ -49,7 +49,7 @@ export const WeekSchedule = React.memo(function WeekSchedule({ lessons, spaces, 
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         <button disabled={disabled} onClick={() => onCreate(today, '09:00', '10:00')}
-          style={{ ...buttonStyle, background: colors.primary, color: '#fff', borderColor: colors.primary }}>+ {t('update15.addLesson')}</button>
+          style={{ ...buttonStyle, background: colors.primaryStrong, color: colors.primaryText, borderColor: 'transparent' }}>+ {t('update15.addLesson')}</button>
       </div>
     </div>
     <div ref={timeline} onWheel={() => { positioned.current = true; }} onTouchStart={() => { positioned.current = true; }} style={{ flex: 1, minHeight: 0, overflow: 'auto', border: `1px solid ${colors.border}`, borderRadius: 16, background: colors.surface }}>
@@ -57,7 +57,7 @@ export const WeekSchedule = React.memo(function WeekSchedule({ lessons, spaces, 
         <div style={{ display: 'grid', gridTemplateColumns: '64px repeat(7, minmax(0, 1fr))', position: 'sticky', top: 0, zIndex: 3, background: colors.surface, borderBottom: `1px solid ${colors.border}` }}>
           <div />
           {DAYS.map(day => <div key={day} style={{ padding: '18px 6px', textAlign: 'center', textTransform: 'capitalize', fontSize: 13,
-            fontWeight: 600, color: day === today ? colors.primary : colors.textPrimary, background: day === today ? colors.primarySoft : undefined,
+            fontWeight: 600, color: colors.textPrimary, background: day === today ? colors.border : undefined,
             borderLeft: `1px solid ${colors.border}` }}>{dayName(day)}</div>)}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '64px repeat(7, minmax(0, 1fr))' }}>
@@ -68,7 +68,7 @@ export const WeekSchedule = React.memo(function WeekSchedule({ lessons, spaces, 
               return <button key={start} disabled={disabled} aria-label={`${t('update15.addLesson')} · ${dayName(day)} ${timeOf(start)}`}
                 onClick={() => onCreate(day, timeOf(start), timeOf(Math.min(start + 60, 1439)))}
                 style={{ display: 'block', width: '100%', height: HOUR_HEIGHT / 2, boxSizing: 'border-box', cursor: 'pointer', border: 0,
-                  borderTop: `${offset === 0 ? 1 : 0}px solid ${colors.border}`, background: day === today ? colors.primarySoft : 'transparent' }} />;
+                  borderTop: `${offset === 0 ? 1 : 0}px solid ${colors.border}`, background: day === today ? colors.border : 'transparent' }} />;
             }))}
             {layoutDay(validLessons.filter(l => l.weekday === day)).map(({ lesson, lane, lanes }) => {
               const space = spaces.find(s => s.id === lesson.space_id);

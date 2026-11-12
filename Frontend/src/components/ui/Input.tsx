@@ -31,7 +31,7 @@ export function Input({
   const borderColor = error
     ? colors.error
     : focused
-    ? colors.primary
+    ? colors.borderStrong
     : 'transparent';
 
   const bgColor = focused ? colors.surfaceElevated : colors.surface;
@@ -43,7 +43,7 @@ export function Input({
           style={{
             fontSize: 13,
             fontFamily: typography.fontFamily.medium,
-            color: focused ? colors.primary : colors.textSecondary,
+            color: colors.textSecondary,
             marginBottom: 6,
             letterSpacing: 0,
           }}
@@ -61,20 +61,13 @@ export function Input({
           borderWidth: 1.5,
           borderColor,
           paddingHorizontal: 14,
-          // sombra sutil quando focused
-          ...(focused ? {
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.15,
-            shadowRadius: 6,
-          } : {}),
         }}
       >
         {icon && (
           <Ionicons
             name={icon}
             size={17}
-            color={focused ? colors.primary : colors.textTertiary}
+            color={focused ? colors.textSecondary : colors.textTertiary}
             style={{ marginRight: 10 }}
           />
         )}

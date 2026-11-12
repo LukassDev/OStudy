@@ -32,6 +32,7 @@ function useImportanceLabels(): Record<string, string> {
 }
 
 export function ContentTab({ spaceId, readOnly = false }: ContentTabProps) {
+  const colors = useThemeColors();
   const { t } = useTranslation();
   const { topics, loading, fetchTopics, deleteTopic, markReviewed } =
     useContentStore();
@@ -107,12 +108,12 @@ export function ContentTab({ spaceId, readOnly = false }: ContentTabProps) {
         contentContainerStyle={{ paddingBottom: 24 }}
       >
         <TouchableOpacity
-          className="bg-primary rounded-[12px] py-3 px-4 mx-4 mt-4 mb-2 flex-row items-center justify-center"
+          className="bg-primaryStrong rounded-[12px] py-3 px-4 mx-4 mt-4 mb-2 flex-row items-center justify-center"
           onPress={() => openCreate(null)}
           disabled={readOnly}
           style={{ opacity: readOnly ? 0.5 : 1 }}
         >
-          <Ionicons name="add" size={20} color="#FFFFFF" />
+          <Ionicons name="add" size={20} color={colors.primaryText} />
           <Text className="text-primaryText font-semibold ml-1">
             {t("content.newTopic")}
           </Text>
@@ -420,12 +421,12 @@ function TopicModal({
             <TouchableOpacity
               key={imp}
               onPress={() => setImportance(imp)}
-              className={`px-4 py-2 rounded-full ${importance === imp ? "bg-primary" : "bg-surface"}`}
+              className={`px-4 py-2 rounded-full ${importance === imp ? "bg-border" : "bg-surface"}`}
             >
               <Text
                 className={
                   importance === imp
-                    ? "text-white text-sm font-medium"
+                    ? "text-textPrimary text-sm font-medium"
                     : "text-textSecondary text-sm"
                 }
               >

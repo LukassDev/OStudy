@@ -50,8 +50,8 @@ export function ResourceOrderModal({ resources, spaceId, onClose }: {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <Text style={{ flex: 1, fontSize: 20, fontFamily: 'DMSans_700Bold', color: colors.textPrimary }}>{t('studyVisual.editResources')}</Text>
               <TouchableOpacity accessibilityRole="button" disabled={dragging} onPress={finish}
-                style={{ padding: 12, borderRadius: 20, backgroundColor: colors.primary, opacity: dragging ? 0.5 : 1 }}>
-                <Text style={{ color: '#fff', fontFamily: 'DMSans_700Bold' }}>{t('studyVisual.finishEditing')}</Text>
+                style={{ padding: 12, borderRadius: 20, backgroundColor: colors.primaryStrong, opacity: dragging ? 0.5 : 1 }}>
+                <Text style={{ color: colors.primaryText, fontFamily: 'DMSans_700Bold' }}>{t('studyVisual.finishEditing')}</Text>
               </TouchableOpacity>
             </View>
             <Text style={{ fontSize: 13, color: colors.textSecondary }}>{t('studyVisual.dragResourcesHint')}</Text>

@@ -12,6 +12,8 @@
     "lint": "expo lint",
     "test:ai": "node scripts/ai-offline-regressions.cjs",
     "test:db": "node scripts/database-migration-regressions.cjs",
+    "test:import": "node scripts/local-data-transfer-regressions.cjs",
+    "test:grades": "node scripts/grade-regressions.cjs",
     "test:math": "node scripts/math-rendering-regressions.cjs",
     "test:tutor": "node scripts/tutor-formatting-regressions.cjs",
     "test:tutor-local": "node scripts/tutor-local-regressions.cjs",

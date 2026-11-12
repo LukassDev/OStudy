@@ -1,4 +1,4 @@
-export const DATABASE_VERSION = 2;
+export const DATABASE_VERSION = 5;
 
 export const INITIAL_SCHEMA = `
 CREATE TABLE IF NOT EXISTS profile (
@@ -109,6 +109,20 @@ CREATE TABLE IF NOT EXISTS classroom_ignored_events (
   created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS grade_modules (
+  id TEXT PRIMARY KEY NOT NULL,
+  space_id TEXT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  criteria TEXT NOT NULL,
+  behavior_score REAL,
+  participation_score REAL,
+  behavior_qualitative TEXT,
+  participation_qualitative TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS grade_modules_space_idx ON grade_modules(space_id, created_at, id);
+
 CREATE TABLE IF NOT EXISTS grades (
   id TEXT PRIMARY KEY NOT NULL,
   space_id TEXT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
@@ -116,6 +130,9 @@ CREATE TABLE IF NOT EXISTS grades (
   score REAL NOT NULL,
   max_score REAL NOT NULL,
   weight REAL NOT NULL DEFAULT 1,
+  module_id TEXT REFERENCES grade_modules(id) ON DELETE SET NULL,
+  category_id TEXT,
+  qualitative_value TEXT,
   topic_id TEXT REFERENCES content_topics(id) ON DELETE SET NULL,
   graded_at TEXT NOT NULL,
   created_at TEXT NOT NULL,

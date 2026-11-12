@@ -100,6 +100,7 @@ function addTokenFormValue(params: URLSearchParams, key: string, value: string |
 let googleIdentityServicesPromise: Promise<void> | null = null;
 let webTokenRefreshPromise: Promise<string | null> | null = null;
 let tokenRefreshPromise: Promise<string | null> | null = null;
+let connectionPromise: Promise<void> | null = null;
 let sessionRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const TOKEN_REFRESH_RETRY_MS = 5 * 60 * 1000;
@@ -146,29 +147,37 @@ async function removeClassroomTokens(): Promise<void> {
 }
 
 export function startClassroomSessionMaintenance(): () => void {
-  if (Platform.OS === 'web') return () => {};
-
   let active = true;
-  const refreshIfNeeded = async () => {
-    const tokens = await getClassroomTokens();
-    if (!active || !tokens) return;
-    if (Date.now() + TOKEN_REFRESH_BUFFER_MS >= tokens.expires_at) {
-      const accessToken = await getValidAccessToken();
-      if (!accessToken) {
-        const storedTokens = await getClassroomTokens();
-        if (storedTokens) scheduleClassroomTokenRefresh(storedTokens, TOKEN_REFRESH_RETRY_MS);
+  let reconnecting = false;
+  let wasInBackground = false;
+  const reconnect = async () => {
+    if (!active || reconnecting || connectionPromise) return;
+    reconnecting = true;
+    try {
+      // Android uses Play Services; other platforms need a configured OAuth client.
+      if (Platform.OS !== 'android') {
+        if (!await getClassroomClientId()) return;
+        await prepareClassroomWebAuth();
       }
-    } else {
-      scheduleClassroomTokenRefresh(tokens);
+      if (active) await connectClassroom();
+    } catch (error) {
+      console.warn('Could not reconnect Google Classroom on app entry:', error);
+    } finally {
+      reconnecting = false;
+      wasInBackground = false;
     }
   };
   const handleAppState = (state: string) => {
-    if (state === 'active') {
-      void refreshIfNeeded().catch(error => console.warn('Could not refresh Google Classroom session:', error));
+    // The sign-in activity itself can background the app. Do not restart it.
+    if (reconnecting || connectionPromise) return;
+    if (state === 'background') wasInBackground = true;
+    if (state === 'active' && wasInBackground) {
+      wasInBackground = false;
+      void reconnect();
     }
   };
   const appStateSubscription = AppState.addEventListener('change', handleAppState);
-  void refreshIfNeeded().catch(error => console.warn('Could not initialize Google Classroom session:', error));
+  void reconnect();
 
   return () => {
     active = false;
@@ -257,7 +266,16 @@ async function exchangeAuthorizationCode(
   });
 }
 
-export async function connectClassroom(clientIdValue?: string): Promise<void> {
+export function connectClassroom(clientIdValue?: string): Promise<void> {
+  if (!connectionPromise) {
+    connectionPromise = authorizeClassroom(clientIdValue).finally(() => {
+      connectionPromise = null;
+    });
+  }
+  return connectionPromise;
+}
+
+async function authorizeClassroom(clientIdValue?: string): Promise<void> {
   if (Platform.OS === 'android') {
     configureNativeGoogleSignIn();
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
