@@ -264,6 +264,7 @@ export function ClassroomFeed() {
           </Text>
         ) : visibleItems.map(item => (
           <Pressable
+            cssInterop={false}
             key={item.id}
             accessibilityRole={item.url ? 'link' : undefined}
             accessibilityLabel={`${item.kind === 'task' ? 'Tarefa' : 'Aviso'}: ${item.title}`}

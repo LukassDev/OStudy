@@ -56,8 +56,11 @@ export function Button({
     size === 'sm' ? 14 :
     16;
 
+  // NativeWind v4's native interop drops function-valued styles.
+  // This control uses only React Native styles, so keep its callback intact.
   return (
     <Pressable
+      cssInterop={false}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ disabled: blocked, busy: !!loading }}

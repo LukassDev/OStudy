@@ -78,6 +78,7 @@ function DataActionButton({ title, description, icon, onPress, disabled, destruc
   const colors = useThemeColors();
   const tint = destructive ? colors.destructive : colors.textPrimary;
   return <Pressable
+    cssInterop={false}
     onPress={onPress}
     disabled={disabled}
     accessibilityRole="button"
@@ -725,6 +726,7 @@ export function ProfileAppSettings() {
             </>
           ) : (
             <Pressable onPress={() => void enableAutomaticBackup()} disabled={backupBusy || !supportsWebBackups}
+              cssInterop={false}
               accessibilityRole="button" accessibilityState={{ disabled: backupBusy || !supportsWebBackups }}
               style={({ pressed }) => ({
                 minHeight: 40,

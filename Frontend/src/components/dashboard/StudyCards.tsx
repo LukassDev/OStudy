@@ -123,6 +123,7 @@ export function StudyCards() {
           <Text style={{ color: slide.emphasizeBody ? colors.textPrimary : colors.textSecondary, fontFamily: slide.emphasizeBody ? 'DMSans_700Bold' : 'DMSans_400Regular', fontSize: slide.emphasizeBody ? 28 : 14, lineHeight: slide.emphasizeBody ? 34 : 22, flexGrow: 1 }}>{slide.body}</Text>
           {slide.caption && <Text style={{ color: colors.textSecondary, fontFamily: 'DMSans_400Regular', fontSize: 13, lineHeight: 20, marginTop: 2 }}>{slide.caption}</Text>}
           <Pressable accessibilityRole="button" onPress={slide.onPress}
+            cssInterop={false}
             onHoverIn={() => setHoveredLink(slide.title)}
             onHoverOut={() => setHoveredLink(null)}
             style={({ pressed }) => ({ alignSelf: 'flex-start', paddingVertical: 8, marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6, opacity: pressed ? 0.82 : 1 })}>

@@ -22,6 +22,7 @@ export function AppPressable({
   return (
     <Pressable
       {...props}
+      cssInterop={false}
       disabled={blocked}
       accessibilityRole={accessibilityRole}
       accessibilityState={{ ...accessibilityState, disabled: blocked, busy: loading }}

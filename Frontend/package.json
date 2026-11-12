@@ -10,6 +10,7 @@
     "web": "expo start --web",
     "export:web:hosting": "expo export --platform web --output-dir ../Web/.firebase-static/out/app",
     "lint": "expo lint",
+    "test:native-styles": "node scripts/native-button-style-regressions.cjs",
     "test:ai": "node scripts/ai-offline-regressions.cjs",
     "test:db": "node scripts/database-migration-regressions.cjs",
     "test:import": "node scripts/local-data-transfer-regressions.cjs",
